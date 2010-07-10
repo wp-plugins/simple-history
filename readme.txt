@@ -25,6 +25,8 @@ It fits perfectly on your dashboard – or on a separate page. It's all configur
 See the plugin in action with this short screencast:
 [youtube http://www.youtube.com/watch?v=4cu4kooJBzs]
 
+![Screenshot of Simple History](http://eskapism.se/wordpress/wp-content/uploads/2010/07/simple-history-dashboard-screenshot.png "Screenshot of Simple History")
+
 == Installation ==
 
 1. Upload the folder "simple-history" to "/wp-content/plugins/"
