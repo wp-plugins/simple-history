@@ -16,15 +16,14 @@ Users of the system can see what articles have been created, modified or deleted
 and what attachments have been uploaded, modified or deleted? And so on. You get the idea.
 
 It’s a pretty good plugin to have on websites where several people are 
-involved: ”Has someone done anything today? Ah, Sarah uploaded 
-the new press release and created an article for it. Good. Now I know.”
+involved: __”Has someone done anything today? Ah, Sarah uploaded 
+the new press release and created an article for it. Good. Now I know.”__
 
 It fits perfectly on your dashboard – or on a separate page. It's all configurable.
 
 #### See it in action
 See the plugin in action with this short screencast:
 [youtube http://www.youtube.com/watch?v=4cu4kooJBzs]
-
 
 == Installation ==
 
