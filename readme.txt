@@ -6,7 +6,7 @@ Requires at least: 2.9.2
 Tested up to: 3.0
 Stable tag: trunk
 
-View changes made by the users of the system. It’s a history/change log/audit/recent changes-plugin.
+View changes made by users within WordPress. It’s a history/change log/audit/recent changes-plugin.
 
 == Description ==
 
@@ -45,6 +45,20 @@ I can do something about it.
 1. Simple History as it looks on your (well, mine anyway..) dashboard.
 
 == Changelog ==
+
+= 0.3 =
+- page is now added under dashboard (was previously under tools). just feel better.
+- mouse over on date now display detailed date a bit faster
+- layout fixes to make it cooler, better, faster, stronger
+- multiple events of same type, performed on the same object, by the same user, are now grouped together. This way 30 edits on the same page does not end up with 30 rows in Simple History. Much better overview!
+- the name of deleted items now show up, instead of "Unknown name" or similar
+- added support for plugins (who activated/deactivated what plugin)
+- support for third party history items. Use like this:
+simple_history_add("action=repaired&object_type=starship&object_name=USS Enterprise");
+this would result in somehting like this:
+Starship "USS Enterprise" repaired
+by admin (John Doe), just now
+- capability edit_pages needed to show history. Is this an appropriate capability do you think?
 
 = 0.2 =
 * Compatible with 2.9.2
