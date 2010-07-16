@@ -13,13 +13,25 @@ View changes made by users within WordPress. It’s a history/change log/audit/r
 Simple History is a plugin that shows recent changes made within WordPress.
 
 Users of the system can see what articles have been created, modified or deleted,
-and what attachments have been uploaded, modified or deleted? And so on. You get the idea.
+what attachments have been uploaded, modified or deleted, and what plugins that have been
+activated or deactivated.
+
+All changes are also avaialable as a RSS feed som you can keep track of the changes made
+via your favorite RSS reader on your phone, on your iPad, or on your computer. Or any where you like.
 
 It’s a pretty good plugin to have on websites where several people are 
-involved: _”Has someone done anything today? Ah, Sarah uploaded 
-the new press release and created an article for it. Good. Now I know.”_
+involved.
 
-It fits perfectly on your dashboard – or on a separate page. It's all configurable.
+#### Example scenarios
+
+Keep track of what other people are doing:
+_"Has someone done anything today? Ah, Sarah uploaded 
+the new press release and created an article for it. Great! Now I don't have to do that."_
+
+Or for debug purposes:
+_"The site feels very slow since yesterday. Has anyone done anything special? ... Ah, Steven activated 'naughy-plugin-x',
+that must be it."
+
 
 #### See it in action
 See the plugin in action with this short screencast:
@@ -44,7 +56,16 @@ I can do something about it.
 
 1. Simple History as it looks on your (well, mine anyway..) dashboard.
 
+2. Simple History settings. Choose to show the plugin on your dashboard, or as a separately page. Or both. Or none, since you can choose
+to only use the secret RSS feed to keep track of the changes on you web site/WordPress installation.
+
 == Changelog ==
+
+= 0.3.1 =
+- forgot to escape html for posts
+- reduced memory usage... I think/hope...
+- changes internal verbs for actions. some old history items may look a bit weird.
+- added RSS feed for recent changes - keep track of changes via your favorite RSS-reader
 
 = 0.3 =
 - page is now added under dashboard (was previously under tools). just feel better.
