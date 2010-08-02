@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.1
+Version: 0.3.2
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.1");
+define( "SIMPLE_HISTORY_VERSION", "0.3.2");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -44,7 +44,10 @@ function simple_history_ajax() {
 	$user = $_POST["user"];
 	if ($user == "By all users") { $user = "";	}
 
-	$page = (int) $_POST["page"];
+	$page = 0;
+	if (isset($_POST["page"])) {
+		$page = (int) $_POST["page"];
+	}
 
 	$args = array(
 		"is_ajax" => true,
@@ -231,7 +234,7 @@ function simple_history_init() {
 
 	// check for RSS
 	// don't know if this is the right way to do this, but it seems to work!
-	if ($_GET["simple_history_get_rss"]) {
+	if (isset($_GET["simple_history_get_rss"])) {
 	
 		$rss_secret_option = get_option("simple_history_rss_secret");
 		$rss_secret_get = $_GET["rss_secret"];
@@ -747,7 +750,11 @@ function simple_history_print_nav() {
 	$tableprefix = $wpdb->prefix;
 	
 	// fetch all types that are in the log
-	$simple_history_type_to_show = $_GET["simple_history_type_to_show"];
+	if (isset($_GET["simple_history_type_to_show"])) {
+		$simple_history_type_to_show = $_GET["simple_history_type_to_show"];
+	} else {
+		$simple_history_type_to_show = "";
+	}
 	$sql = "SELECT DISTINCT object_type, object_subtype FROM {$tableprefix}simple_history ORDER BY object_type, object_subtype";
 	$arr_types = $wpdb->get_results($sql);
 	#echo "<p>View:</p>";
@@ -800,15 +807,25 @@ function simple_history_print_nav() {
 	if (!empty($arr_users)) {
 		foreach ($arr_users as $user_id => $one_user) {
 			$user = get_user_by("id", $user_id);
-			$arr_users[$user_id]["user_login"] = $user->user_login;
-			$arr_users[$user_id]["user_nicename"] = $user->user_nicename;
-			$arr_users[$user_id]["first_name"] = $user->first_name;
-			$arr_users[$user_id]["last_name"] = $user->last_name;
+			if ($user) {
+				$arr_users[$user_id]["user_login"] = $user->user_login;
+				$arr_users[$user_id]["user_nicename"] = $user->user_nicename;
+				if (isset($user->first_name)) {
+					$arr_users[$user_id]["first_name"] = $user->first_name;
+				}
+				if (isset($user->last_name)) {
+					$arr_users[$user_id]["last_name"] = $user->last_name;
+				}
+			}
 		}
 	}
 
 	if ($arr_users) {
-		$simple_history_user_to_show = $_GET["simple_history_user_to_show"];
+		if (isset($_GET["simple_history_user_to_show"])) {
+			$simple_history_user_to_show = $_GET["simple_history_user_to_show"];
+		} else {
+			$simple_history_user_to_show = "";
+		}
 		$str_users = "";
 		$str_users .= "<ul class='simple-history-filter simple-history-filter-user'>";
 		$css = "";
@@ -892,7 +909,8 @@ function simple_history_get_items_array($args) {
 		$prev_row = null;
 		foreach ($rows as $one_row) {
 			if (
-				$one_row->action == $prev_row->action
+				$prev_row
+				&& $one_row->action == $prev_row->action
 				&& $one_row->object_type == $prev_row->object_type
 				&& $one_row->object_type == $prev_row->object_type
 				&& $one_row->object_subtype == $prev_row->object_subtype
@@ -1021,14 +1039,16 @@ function simple_history_print_history($args = null) {
 				$who .= "<a href='$user_link'>";
 				$who .= $user->user_nicename;
 				$who .= "</a>";
-				if ($user->first_name || $user->last_name) {
-					$who .= " (";
-					if ($user->first_name && $user->last_name) {
-						$who .= $user->first_name . " " . $user->last_name;
-					} else {
-						$who .= $user->first_name . $user->last_name; // just one of them, no space necessary
+				if (isset($user->first_name) && isset($user->last_name)) {
+					if ($user->first_name || $user->last_name) {
+						$who .= " (";
+						if ($user->first_name && $user->last_name) {
+							$who .= $user->first_name . " " . $user->last_name;
+						} else {
+							$who .= $user->first_name . $user->last_name; // just one of them, no space necessary
+						}
+						$who .= ")";
 					}
-					$who .= ")";
 				}
 			} else {
 				$who .= "&lt;Unknown or deleted user&gt;";
@@ -1123,14 +1143,16 @@ function simple_history_print_history($args = null) {
 					$user_out .= " <a href='$user_link'>";
 					$user_out .= $user->user_nicename;
 					$user_out .= "</a>";
-					if ($user->first_name || $user->last_name) {
-						$user_out .= " (";
-						if ($user->first_name && $user->last_name) {
-							$user_out .= $user->first_name . " " . $user->last_name;
-						} else {
-							$user_out .= $user->first_name . $user->last_name; // just one of them, no space necessary
+					if (isset($user->first_name) && isset($user->last_name)) {
+						if ($user->first_name || $user->last_name) {
+							$user_out .= " (";
+							if ($user->first_name && $user->last_name) {
+								$user_out .= $user->first_name . " " . $user->last_name;
+							} else {
+								$user_out .= $user->first_name . $user->last_name; // just one of them, no space necessary
+							}
+							$user_out .= ")";
 						}
-						$user_out .= ")";
 					}
 					$user_out .= "</span>";
 				} else {

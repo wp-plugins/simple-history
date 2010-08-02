@@ -32,12 +32,13 @@ Or for debug purposes:
 _"The site feels very slow since yesterday. Has anyone done anything special? ... Ah, Steven activated 'naughy-plugin-x',
 that must be it."_
 
-
 #### See it in action
 See the plugin in action with this short screencast:
 [youtube http://www.youtube.com/watch?v=4cu4kooJBzs]
 
-![Screenshot of Simple History](http://eskapism.se/wordpress/wp-content/uploads/2010/07/simple-history-dashboard-screenshot.png "Screenshot of Simple History")
+#### Donation and more plugins
+* If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
+* Check out some [more plugins](http://wordpress.org/extend/plugins/profile/eskapism) by the same author.
 
 == Installation ==
 
@@ -60,6 +61,9 @@ I can do something about it.
 to only use the secret RSS feed to keep track of the changes on you web site/WordPress installation.
 
 == Changelog ==
+
+= 0.3.2 =
+- fixed some php notice messages + some other small things I don't remember..
 
 = 0.3.1 =
 - forgot to escape html for posts
