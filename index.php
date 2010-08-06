@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.2
+Version: 0.3.3
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.2");
+define( "SIMPLE_HISTORY_VERSION", "0.3.3");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -87,88 +87,6 @@ function simple_history_dashboard() {
 }
 
 function simple_history_admin_head() {
-	?>
-	<script type="text/javascript">
-		/* <![CDATA[ */
-		/**
-		 *  load history items via ajax
-		 */
-		var simple_history_current_page = 0;
-		jQuery(".simple-history-filter a").live("click", function() {
-			$t = jQuery(this);
-			$t.closest("ul").find("li").removeClass("selected");
-			$t.closest("li").addClass("selected");
-			$ol = jQuery("ol.simple-history");
-			
-			jQuery(".simple-history-added-by-ajax").remove();
-			
-			var $wrapper = jQuery("#simple-history-ol-wrapper");
-			$wrapper.height($wrapper.height()); // so dashboard widget does not collapse when loading new items
-		
-			jQuery("#simple-history-load-more").hide("fast");
-			$ol.fadeOut("fast");
-			jQuery("#simple-history-no-more-items").hide();
-
-			simple_history_current_page = 0;
-			var data = {
-				"action": "simple_history_ajax",
-				"type": jQuery(".simple-history-filter-type li.selected a").text(),
-				"user": jQuery(".simple-history-filter-user li.selected a").text()
-			};
-			jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
-				$ol.html(data);
-				$ol.fadeIn("fast");
-				$wrapper.height("auto");
-				jQuery("#simple-history-load-more").fadeIn("fast");
-			});
-			
-			return false;
-		});
-		
-		jQuery("#simple-history-load-more a").live("click", function() {
-			simple_history_current_page++;
-
-			jQuery("#simple-history-load-more,#simple-history-load-more-loading").toggle();
-			
-			$ol = jQuery("ol.simple-history:last");
-			var data = {
-				"action": "simple_history_ajax",
-				"type": jQuery(".simple-history-filter-type li.selected a").text(),
-				"user": jQuery(".simple-history-filter-user li.selected a").text(),
-				"page": simple_history_current_page
-			};
-			jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
-			
-				// if data = simpleHistoryNoMoreItems then no more items found, so hide load-more-link
-				if (data == "simpleHistoryNoMoreItems") {
-					jQuery("#simple-history-load-more,#simple-history-load-more-loading").hide();
-					jQuery("#simple-history-no-more-items").show();
-				} else {
-					var $new_elm = jQuery("<ol class='simple-history simple-history-added-by-ajax'>" + data + "</ol>");
-					$new_elm.hide();
-					$ol.after($new_elm);
-					$new_elm.show("slow");
-					jQuery("#simple-history-load-more,#simple-history-load-more-loading").toggle();
-				}
-			});
-			return false;
-		});
-		
-		jQuery("ol.simple-history .when").live("mouseover", function() {
-			jQuery(this).closest("li").find(".when_detail").fadeIn("fast");
-		});
-		jQuery("ol.simple-history .when").live("mouseout", function() {
-			jQuery(this).closest("li").find(".when_detail").fadeOut("fast");
-		});
-
-		// show occasions
-		jQuery("a.simple-history-occasion-show").live("click", function() {
-			jQuery(this).closest("li").find("ul.simple-history-occasions").toggle("fast");
-			return false;
-		});
-		/* ]]> */
-	</script>
-	<?php
 }
 
 
@@ -184,21 +102,6 @@ delete_category
 edit_category 
     Runs when a category is updated/edited, including when a post or blogroll link is added/deleted or its categories are updated (which causes the count for the category to update). Action function arguments: category ID. 
     
-edit_comment 
-    Runs after a comment is updated/edited in the database. Action function arguments: comment ID
-    
-delete_comment 
-    Runs just before a comment is deleted. Action function arguments: comment ID. 
-
-comment_closed 
-    Runs when the post is marked as not allowing comments while trying to display comment entry form. Action function argument: post ID. 
-
-edit_comment 
-    Runs after a comment is updated/edited in the database. Action function arguments: comment ID. 
-
-delete_comment 
-    Runs just before a comment is deleted. Action function arguments: comment ID. 
-
 add_link 
     Runs when a new blogroll link is first added to the database. Action function arguments: link ID. 
 
@@ -215,7 +118,8 @@ switch_theme
 */
 
 function simple_history_init() {
-	// users
+
+	// users and stuff
 	add_action("wp_login", "simple_history_wp_login");
 	add_action("wp_logout", "simple_history_wp_logout");
 	add_action("delete_user", "simple_history_delete_user");
@@ -308,6 +212,21 @@ function simple_history_admin_init() {
 	add_action("edit_attachment", "simple_history_edit_attachment");
 	add_action("delete_attachment", "simple_history_delete_attachment");
 
+	add_action("edit_comment", "simple_history_edit_comment");
+	add_action("delete_comment", "simple_history_delete_comment");
+	add_action("wp_set_comment_status", "simple_history_set_comment_status", 10, 2);
+	/*
+	edit_comment 
+	    Runs after a comment is updated/edited in the database. Action function arguments: comment ID. 
+	
+	delete_comment 
+	    Runs just before a comment is deleted. Action function arguments: comment ID. 
+
+	wp_set_comment_status 
+    	Runs when the status of a comment changes. Action function arguments: comment ID, status string indicating the new status ("delete", "approve", "spam", "hold").     
+    */
+    // comments
+
 	add_settings_section("simple_history_settings_general", SIMPLE_HISTORY_NAME, "simple_history_settings_page", "general");
 	add_settings_field("simple_history_settings_field_1", "Show Simple History", "simple_history_settings_field", "general", "simple_history_settings_general");
 	add_settings_field("simple_history_settings_field_2", "RSS feed", "simple_history_settings_field_rss", "general", "simple_history_settings_general");
@@ -315,6 +234,8 @@ function simple_history_admin_init() {
 	register_setting("general", "simple_history_show_as_page");
 
 	wp_enqueue_style( "simple_history_styles", SIMPLE_HISTORY_URL . "styles.css", false, SIMPLE_HISTORY_VERSION );	
+	
+	wp_enqueue_script("simple_history", SIMPLE_HISTORY_URL . "scripts.js", array("jquery"), SIMPLE_HISTORY_VERSION);
 
 }
 function simple_history_settings_page() {
@@ -395,16 +316,76 @@ function simple_history_deactivated_plugin($plugin_name) {
 	simple_history_add("action=deactivated&object_type=plugin&object_name=$plugin_name");
 }
 
+function simple_history_edit_comment($comment_id) {
+	
+	$comment_data = get_commentdata($comment_id, 0, true);
+	$comment_post_ID = $comment_data["comment_post_ID"];
+	$post = get_post($comment_post_ID);
+	$post_title = get_the_title($comment_post_ID);
+	$excerpt = get_comment_excerpt($comment_id);
+	$author = get_comment_author($comment_id);
+
+	$str = sprintf( "$excerpt [" . __('From %1$s on %2$s') . "]", $author, $post_title );
+	$str = urlencode($str);
+
+	simple_history_add("action=edited&object_type=comment&object_name=$str&object_id=$comment_id");
+}
+
+function simple_history_delete_comment($comment_id) {
+	
+	$comment_data = get_commentdata($comment_id, 0, true);
+	$comment_post_ID = $comment_data["comment_post_ID"];
+	$post = get_post($comment_post_ID);
+	$post_title = get_the_title($comment_post_ID);
+	$excerpt = get_comment_excerpt($comment_id);
+	$author = get_comment_author($comment_id);
+
+	$str = sprintf( "$excerpt [" . __('From %1$s on %2$s') . "]", $author, $post_title );
+	$str = urlencode($str);
+
+	simple_history_add("action=deleted&object_type=comment&object_name=$str&object_id=$comment_id");
+}
+
+function simple_history_set_comment_status($comment_id, $new_status) {
+	#echo "<br>new status: $new_status<br>"; // 0
+	// $new_status hold (unapproved), approve, spam, trash
+	$comment_data = get_commentdata($comment_id, 0, true);
+	$comment_post_ID = $comment_data["comment_post_ID"];
+	$post = get_post($comment_post_ID);
+	$post_title = get_the_title($comment_post_ID);
+	$excerpt = get_comment_excerpt($comment_id);
+	$author = get_comment_author($comment_id);
+
+	$action = "";
+	if ("approve" == $new_status) {
+		$action = "approved";
+	} elseif ("hold" == $new_status) {
+		$action = "unapproved";
+	} elseif ("spam" == $new_status) {
+		$action = "marked as spam";
+	} elseif ("trash" == $new_status) {
+		$action = "trashed";
+	} elseif ("0" == $new_status) {
+		$action = "untrashed";
+	}
+
+	$action = urlencode($action);
+
+	$str = sprintf( "$excerpt [" . __('From %1$s on %2$s') . "]", $author, $post_title );
+	$str = urlencode($str);
+
+	simple_history_add("action=$action&object_type=comment&object_name=$str&object_id=$comment_id");
+}
 
 function simple_history_update_option($option, $oldval, $newval) {
 	/*
-echo "<br><br>simple_history_update_option()";
-	echo "<br>Updated option $option";
-	echo "<br>oldval: ";
-	bonny_d($oldval);
-	echo "<br>newval:";
-	bonny_d($newval);
-*/
+	echo "<br><br>simple_history_update_option()";
+		echo "<br>Updated option $option";
+		echo "<br>oldval: ";
+		bonny_d($oldval);
+		echo "<br>newval:";
+		bonny_d($newval);
+	*/
 
 	if ($option == "active_plugins") {
 	
@@ -1184,9 +1165,15 @@ function simple_history_print_history($args = null) {
 				
 				$user_out = ucfirst($user_out);
 				echo $user_out;
+
+			} elseif ("comment" == $object_type) {
+				
+				$comment_link = get_edit_comment_link($object_id);
+				echo ucwords($object_type) . " $object_subtype <a href='$comment_link'><span class='simple-history-title'>$object_name\"</span></a> $action";
+
 			} else {
 
-				// unknown type
+				// unknown/general type
 				echo ucwords($object_type) . " $object_subtype <span class='simple-history-title'>\"$object_name\"</span> $action";
 
 			}

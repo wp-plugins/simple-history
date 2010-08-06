@@ -60,7 +60,13 @@ I can do something about it.
 2. Simple History settings. Choose to show the plugin on your dashboard, or as a separately page. Or both. Or none, since you can choose
 to only use the secret RSS feed to keep track of the changes on you web site/WordPress installation.
 
+3. The RSS feed with changes, as shown in Firefox.
+
 == Changelog ==
+
+= 0.3.3 =
+- Moved JavaScript to own file
+- Added comments to the history, so now you can see who approved a comment (or unapproved, or marked as spam, or moved to trash, or restored from the trash)
 
 = 0.3.2 =
 - fixed some php notice messages + some other small things I don't remember..
