@@ -50,14 +50,14 @@ Now Simple History will be visible both on the dashboard and in the menu under p
 
 == Feedback ==
 Like the plugin? Dislike it? Got bugs or feature request?
-Great! Contact me at par.thernstrom@gmail.com or at twitter.com/eskapism and hopefully 
+Great! Contact me at par.thernstrom@gmail.com or at (twitter.com/eskapism)[http://twitter.com/eskapism] and hopefully 
 I can do something about it.
 
 == Screenshots ==
 
 1. Simple History as it looks on your (well, mine anyway..) dashboard.
 
-2. Simple History settings. Choose to show the plugin on your dashboard, or as a separately page. Or both. Or none, since you can choose
+2. Simple History settings (available under "General Settings"). Choose to show the plugin on your dashboard, or as a separately page. Or both. Or none, since you can choose
 to only use the secret RSS feed to keep track of the changes on you web site/WordPress installation.
 
 3. The RSS feed with changes, as shown in Firefox.
