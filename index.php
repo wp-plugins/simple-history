@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.3
+Version: 0.3.4
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.3");
+define( "SIMPLE_HISTORY_VERSION", "0.3.4");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -142,52 +142,63 @@ function simple_history_init() {
 	
 		$rss_secret_option = get_option("simple_history_rss_secret");
 		$rss_secret_get = $_GET["rss_secret"];
+
+		echo '<?xml version="1.0"?>';
+		$self_link = simple_history_get_rss_address();
+
 		if ($rss_secret_option == $rss_secret_get) {
-			echo '<?xml version="1.0"?>';
 			?>
-			<rss version="2.0">
-			   <channel>
-			      <title>Simple History for <?php echo get_bloginfo("name") ?></title>
-			      <link><?php get_bloginfo("link") ?></link>
-			<?php
-			$arr_items = simple_history_get_items_array("items=10");
-			foreach ($arr_items as $one_item) {
-				$object_type = ucwords($one_item->object_type);
-				$object_name = esc_html($one_item->object_name);
-				$user = get_user_by("id", $one_item->user_id);
-				$user_nicename = esc_html($user->user_nicename);
-				$description = "";
-				if ($user_nicename) {
-					$description .= "By $user_nicename<br />";
-				}
-				if ($one_item->occasions) {
-					$description .= sizeof($one_item->occasions) . " occasions<br />";
-				}
-	
-				?>
-			      <item>
-			         <title><?php echo "$object_type \"{$object_name}\" {$one_item->action}" ?></title>
-			         <description><![CDATA[<?php echo $description ?>]]></description>
-			         <pubDate><?php echo date("D, d M Y H:i:s", $one_item->date_unix) ?> GMT</pubDate>
-			      </item>
-				<?php
-			}
-			?>
-			</channel>
+			<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+				<channel>
+					<title>Simple History for <?php echo get_bloginfo("name") ?></title>
+					<description>WordPress History for <?php echo get_bloginfo("name") ?></description>
+					<link><?php echo get_bloginfo("siteurl") ?></link>
+					<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
+					<?php
+					$arr_items = simple_history_get_items_array("items=10");
+					foreach ($arr_items as $one_item) {
+						$object_type = ucwords($one_item->object_type);
+						$object_name = esc_html($one_item->object_name);
+						$user = get_user_by("id", $one_item->user_id);
+						$user_nicename = esc_html($user->user_nicename);
+						$description = "";
+						if ($user_nicename) {
+							$description .= "By $user_nicename<br />";
+						}
+						if ($one_item->occasions) {
+							$description .= sizeof($one_item->occasions) . " occasions<br />";
+						}
+						
+						$item_title = "$object_type \"{$object_name}\" {$one_item->action}";
+						$item_title = html_entity_decode($item_title, ENT_COMPAT, "UTF-8");
+						$item_guid = get_bloginfo("siteurl") . "?simple-history-guid=" . $one_item->id;
+						?>
+					      <item>
+					         <title><![CDATA[<?php echo $item_title; ?>]]></title>
+					         <description><![CDATA[<?php echo $description ?>]]></description>
+					         <pubDate><?php echo date("D, d M Y H:i:s", $one_item->date_unix) ?> GMT</pubDate>
+					         <guid isPermaLink="false"><?php echo $item_guid ?></guid>
+					      </item>
+						<?php
+					}
+					?>
+				</channel>
 			</rss>
 			<?php
 		} else {
 			// not ok rss secret
-			echo '<?xml version="1.0"?>';
 			?>
-			<rss version="2.0">
+			<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 			   <channel>
 			      <title>Simple History for <?php echo get_bloginfo("name") ?></title>
-			      <link><?php get_bloginfo("link") ?></link>
+			      <description>WordPress History for <?php echo get_bloginfo("name") ?></description>
+			      <link><?php echo get_bloginfo("siteurl") ?></link>
+			      <atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
 			      <item>
 			         <title>Wrong RSS secret</title>
 			         <description>Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed.</description>
 			         <pubDate><?php echo date("D, d M Y H:i:s", time()) ?> GMT</pubDate>
+			         <guid><?php echo get_bloginfo("siteurl") . "?simple-history-guid=wrong-secret" ?></guid>
 			      </item>
 				</channel>
 			</rss>
@@ -269,6 +280,7 @@ function simple_history_settings_field() {
 function simple_history_get_rss_address() {
 	$rss_secret = get_option("simple_history_rss_secret");
 	$rss_address = add_query_arg(array("simple_history_get_rss" => "1", "rss_secret" => $rss_secret), get_bloginfo("url") . "/");
+	$rss_address = htmlspecialchars($rss_address, ENT_COMPAT, "UTF-8");
 	return $rss_address;
 }
 
