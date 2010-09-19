@@ -29,6 +29,8 @@ ol.simple-history li {
 }
 ol.simple-history .first {
 	font-size: 13px;
+	font-family: Georgia,"Times New Roman","Bitstream Charter",Times,serif;
+	margin: 0 0 0.2em;
 	/* margin-left: 60px; */
 }
 
@@ -42,19 +44,34 @@ ol.simple-history .when {
  	cursor: help;
  	border-bottom: 1px dotted #bbb;
 }
+ol.simple-history .when_detail {
+/* 	margin-left: .5em; */
+	display: none;
+	position: relative;
+	top: 1.75em;
+	left: -2em;
+	padding: .5ex;
+	background-color: #fffdb5;
+	border: 1px solid #eee;
+	color: black;
+}
+
 .simple-history-attachment-thumbnail {
 	position: absolute;
 	left: 0;
 	top: 0;
 }
 .simple-history-title {
+	font-weight: bold;
 }
 
 li.simple-history-has-attachment-thumnbail {
 	min-height: 50px;
 }
-.simple-history-has-attachment-thumnbail .first,
-.simple-history-has-attachment-thumnbail .second {
+ol.simple-history .simple-history-has-attachment-thumnbail .first,
+ol.simple-history .simple-history-has-attachment-thumnbail .second,
+ol.simple-history .simple-history-has-attachment-thumnbail .third
+ {
 	margin-left: 60px;
 }
 
@@ -65,4 +82,57 @@ li.simple-history-has-attachment-thumnbail {
 
 .simple-history-added-by-ajax {
 	border-top: 1px solid #ddd;
+}
+
+ul.simple-history-occasions {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	color: #999999;
+}
+ul.simple-history-occasions li {
+	margin: 0;
+	padding: 0;
+}
+
+#simple-history-no-more-items {
+	padding: .5em;
+	background-color: #FFFFE0;
+	border: 1px solid #E6DB55;
+	font-weight: bold;
+}
+
+#simple-history-rss-feed-dashboard {
+	display: none;
+}
+
+#simple_history_dashboard_widget #simple-history-rss-feed-dashboard {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	margin: 0;
+	display: block;
+}
+#simple-history-rss-feed-dashboard a,
+#simple-history-rss-feed-page span
+{
+	background: transparent url(http://jquery-ui.googlecode.com/svn/trunk/themes/base/images/ui-icons_888888_256x240.png) no-repeat -17px -176px;
+	display: block;
+	width: 16px;
+	height: 16px;
+	text-indent: -99999px;
+}
+
+#simple_history_dashboard_widget #simple-history-rss-feed-page {
+	display: none;
+}
+#simple-history-rss-feed-page {
+	display: block;
+	padding-top: 10px;
+	border-top: 1px solid #ccc;
+}
+#simple-history-rss-feed-page span {
+	float: left;
+}
+#simple-history-rss-feed-page a {
 }
