@@ -64,10 +64,14 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
+= 0.3.6 =
+- Made the RSS-feature a bit easier to find: added a RSS-icon to the dashboard window - it's very discrete, you can find it at the bottom right corner. On the Simple History page it's a bit more clear, at the bottom, with text and all. Enjoy!
+- Added POT-file
+
 = 0.3.5 =
 - using get_the_title instead of fetching the title directly from the post object. should make plugins like qtranslate work a bit better.
 - preparing for translation by using __() and _e() functions. POT-file will be available shortly.
-- Could get cryptiug "simpleHistoryNoMoreItems"-text when loading a type with no items.
+- Could get cryptic "simpleHistoryNoMoreItems"-text when loading a type with no items.
 
 = 0.3.4 =
 - RSS-feed is now valid, and should work at more places (could be broken because of html entities and stuff)

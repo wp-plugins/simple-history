@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.5
+Version: 0.3.6
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.5");
+define( "SIMPLE_HISTORY_VERSION", "0.3.6");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -943,7 +943,10 @@ function simple_history_print_history($args = null) {
 	$args = wp_parse_args( $args, $defaults );
 
 	if ($arr_events) {
-		if (!$args["is_ajax"]) { echo "<div id='simple-history-ol-wrapper'><ol class='simple-history'>"; }
+		if (!$args["is_ajax"]) {
+			// if not ajax, print the div
+			echo "<div id='simple-history-ol-wrapper'><ol class='simple-history'>";
+		}
 	
 		$loopNum = 0;
 		$real_loop_num = -1;
@@ -1218,14 +1221,20 @@ function simple_history_print_history($args = null) {
 		}
 		
 		if (!$args["is_ajax"]) {
-			$show_more = sprintf(__("Show %d more", 'simple-history'), $args[items]);
+			// if not ajax, print the divs and stuff we need
+			$show_more = sprintf(__("Show %d more", 'simple-history'), $args["items"]);
 			$loading = __("Loading...", 'simple-history');
 			$no_more_found = __("No more history items found.", 'simple-history');
+			$view_rss = __("Simple History RSS feed", 'simple-history');
+			$view_rss_link = simple_history_get_rss_address();
+			
 			echo "</ol>
 			</div>
 			<p id='simple-history-load-more'><a href='#'>$show_more</a></p>
 			<p class='hidden' id='simple-history-load-more-loading'>$loading</p>
 			<p class='hidden' id='simple-history-no-more-items'>$no_more_found</p>
+			<p id='simple-history-rss-feed-dashboard'><a title='$view_rss' href='$view_rss_link'>$view_rss</a></p>
+			<p id='simple-history-rss-feed-page'><a title='$view_rss' href='$view_rss_link'><span></span>$view_rss</a></p>
 			";
 		}
 	} else {

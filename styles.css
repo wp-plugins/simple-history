@@ -101,3 +101,38 @@ ul.simple-history-occasions li {
 	border: 1px solid #E6DB55;
 	font-weight: bold;
 }
+
+#simple-history-rss-feed-dashboard {
+	display: none;
+}
+
+#simple_history_dashboard_widget #simple-history-rss-feed-dashboard {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	margin: 0;
+	display: block;
+}
+#simple-history-rss-feed-dashboard a,
+#simple-history-rss-feed-page span
+{
+	background: transparent url(http://jquery-ui.googlecode.com/svn/trunk/themes/base/images/ui-icons_888888_256x240.png) no-repeat -17px -176px;
+	display: block;
+	width: 16px;
+	height: 16px;
+	text-indent: -99999px;
+}
+
+#simple_history_dashboard_widget #simple-history-rss-feed-page {
+	display: none;
+}
+#simple-history-rss-feed-page {
+	display: block;
+	padding-top: 10px;
+	border-top: 1px solid #ccc;
+}
+#simple-history-rss-feed-page span {
+	float: left;
+}
+#simple-history-rss-feed-page a {
+}
