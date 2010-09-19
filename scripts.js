@@ -25,10 +25,16 @@ jQuery(".simple-history-filter a").live("click", function() {
 		"user": jQuery(".simple-history-filter-user li.selected a").text()
 	};
 	jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
-		$ol.html(data);
-		$ol.fadeIn("fast");
-		$wrapper.height("auto");
-		jQuery("#simple-history-load-more").fadeIn("fast");
+		if (data == "simpleHistoryNoMoreItems") {
+			jQuery("#simple-history-load-more,#simple-history-load-more-loading").hide();
+			jQuery("#simple-history-no-more-items").show();
+			jQuery("#simple-history-ol-wrapper").height("auto");
+		} else {
+			$ol.html(data);
+			$ol.fadeIn("fast");
+			$wrapper.height("auto");
+			jQuery("#simple-history-load-more").fadeIn("fast");
+		}
 	});
 	
 	return false;

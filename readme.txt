@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: trunk
+Stable tag: 0.3.5
 
 View changes made by users within WordPress. It’s a history/change log/audit/recent changes-plugin.
 
@@ -63,6 +63,11 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 0.3.5 =
+- using get_the_title instead of fetching the title directly from the post object. should make plugins like qtranslate work a bit better.
+- preparing for translation by using __() and _e() functions. POT-file will be available shortly.
+- Could get cryptiug "simpleHistoryNoMoreItems"-text when loading a type with no items.
 
 = 0.3.4 =
 - RSS-feed is now valid, and should work at more places (could be broken because of html entities and stuff)

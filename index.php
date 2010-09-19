@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.4
+Version: 0.3.5
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.4");
+define( "SIMPLE_HISTORY_VERSION", "0.3.5");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -90,33 +90,6 @@ function simple_history_admin_head() {
 }
 
 
-/*
-http://codex.wordpress.org/Plugin_API/Action_Reference
-   
-create_category 
-    Runs when a new category is created. Action function arguments: category ID. 
-
-delete_category 
-    Runs just after a category is deleted from the database and its corresponding links/posts are updated to remove the category. Action function arguments: category ID. 
-
-edit_category 
-    Runs when a category is updated/edited, including when a post or blogroll link is added/deleted or its categories are updated (which causes the count for the category to update). Action function arguments: category ID. 
-    
-add_link 
-    Runs when a new blogroll link is first added to the database. Action function arguments: link ID. 
-
-delete_link 
-    Runs when a blogroll link is deleted. Action function arguments: link ID. 
-
-edit_link 
-    Runs when a blogroll link is edited. Action function arguments: link ID. 
-    
-switch_theme 
-    Runs when the blog's theme is changed. Action function argument: name of the new theme. 
-   
-
-*/
-
 function simple_history_init() {
 
 	// users and stuff
@@ -150,8 +123,8 @@ function simple_history_init() {
 			?>
 			<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 				<channel>
-					<title>Simple History for <?php echo get_bloginfo("name") ?></title>
-					<description>WordPress History for <?php echo get_bloginfo("name") ?></description>
+					<title><?php printf(__("Simple History for %s", 'simple-history'), get_bloginfo("name")) ?></title>
+					<description><?php printf(__("WordPress History for %s", 'simple-history'), get_bloginfo("name")) ?></description>
 					<link><?php echo get_bloginfo("siteurl") ?></link>
 					<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
 					<?php
@@ -163,10 +136,12 @@ function simple_history_init() {
 						$user_nicename = esc_html($user->user_nicename);
 						$description = "";
 						if ($user_nicename) {
-							$description .= "By $user_nicename<br />";
+							$description .= sprintf(__("By %s", 'simple-history'), $user_nicename);
+							$description .= "<br />";
 						}
 						if ($one_item->occasions) {
-							$description .= sizeof($one_item->occasions) . " occasions<br />";
+							$description .= sprintf(__("%d occasions", 'simple-history'), sizeof($one_item->occasions));
+							$description .= "<br />";
 						}
 						
 						$item_title = "$object_type \"{$object_name}\" {$one_item->action}";
@@ -189,17 +164,17 @@ function simple_history_init() {
 			// not ok rss secret
 			?>
 			<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-			   <channel>
-			      <title>Simple History for <?php echo get_bloginfo("name") ?></title>
-			      <description>WordPress History for <?php echo get_bloginfo("name") ?></description>
-			      <link><?php echo get_bloginfo("siteurl") ?></link>
-			      <atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
-			      <item>
-			         <title>Wrong RSS secret</title>
-			         <description>Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed.</description>
-			         <pubDate><?php echo date("D, d M Y H:i:s", time()) ?> GMT</pubDate>
-			         <guid><?php echo get_bloginfo("siteurl") . "?simple-history-guid=wrong-secret" ?></guid>
-			      </item>
+				<channel>
+					<title><?php printf(__("Simple History for %s", 'simple-history'), get_bloginfo("name")) ?></title>
+					<description><?php printf(__("WordPress History for %s", 'simple-history'), get_bloginfo("name")) ?></description>
+					<link><?php echo get_bloginfo("siteurl") ?></link>
+					<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
+					<item>
+						<title><?php _e("Wrong RSS secret", 'simple-history')?></title>
+						<description><?php _e("Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed.", 'simple-history')?></description>
+						<pubDate><?php echo date("D, d M Y H:i:s", time()) ?> GMT</pubDate>
+						<guid><?php echo get_bloginfo("siteurl") . "?simple-history-guid=wrong-secret" ?></guid>
+					</item>
 				</channel>
 			</rss>
 			<?php
@@ -212,6 +187,8 @@ function simple_history_init() {
 
 
 function simple_history_admin_init() {
+
+	load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
 	// posts
 	add_action("save_post", "simple_history_save_post");
@@ -267,12 +244,12 @@ function simple_history_settings_field() {
 	?>
 	
 	<input <?php echo $show_on_dashboard ? "checked='checked'" : "" ?> type="checkbox" value="1" name="simple_history_show_on_dashboard" id="simple_history_show_on_dashboard" />
-	<label for="simple_history_show_on_dashboard">on the dashboard</label>
+	<label for="simple_history_show_on_dashboard"><?php _e("on the dashboard", 'simple-history') ?></label>
 
 	<br />
 	
 	<input <?php echo $show_as_page ? "checked='checked'" : "" ?> type="checkbox" value="1" name="simple_history_show_as_page" id="simple_history_show_as_page" />
-	<label for="simple_history_show_as_page">as a page under the tools menu</label>
+	<label for="simple_history_show_as_page"><?php _e("as a page under the tools menu", 'simple-history') ?></label>
 	
 	<?php
 }
@@ -302,7 +279,9 @@ function simple_history_settings_field_rss() {
 	}
 	if ($_GET["simple_history_rss_update_secret"]) {
 		$create_new_secret = true;
-		echo "<p class='updated'>Created new secret RSS adress</p>";
+		echo "<p class='updated'>";
+		_e("Created new secret RSS adress", 'simple-history');
+		echo "</p>";
 	}
 	
 	if ($create_new_secret) {
@@ -311,10 +290,11 @@ function simple_history_settings_field_rss() {
 	
 	$rss_address = simple_history_get_rss_address();
 	echo "<code><a href='$rss_address'>$rss_address</a></code>";
-	echo "<br />This is a secret RSS feed for Simple History. Only share the link with people you trust.";
+	echo "<br />";
+	_e("This is a secret RSS feed for Simple History. Only share the link with people you trust", 'simple-history');
 	echo "<br />";
 	$update_link = add_query_arg("simple_history_rss_update_secret", "1");
-	echo "You can <a href='$update_link'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands.";
+	printf(__("You can <a href='%s'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands.", 'simple-history'), $update_link);
 }
 
 // @todo: move all add-related stuff to own file? there are so many of them.. kinda confusing, ey.
@@ -415,7 +395,7 @@ function simple_history_update_option($option, $oldval, $newval) {
 		$diff_removed = array_diff((array) $oldval, (array) $newval);
 		$debug .= "\ndiff_added: " . print_r($diff_added, true);
 		$debug .= "\ndiff_removed: " . print_r($diff_removed, true);
-		b_fd($debug);
+		#b_fd($debug);
 	}
 }
 
@@ -454,18 +434,18 @@ function simple_history_updated_option3($option) {
 
 function simple_history_add_attachment($attachment_id) {
 	$post = get_post($attachment_id);
-	$post_title = urlencode($post->post_title);
+	$post_title = urlencode(get_the_title($post->ID));
 	simple_history_add("action=added&object_type=attachment&object_id=$attachment_id&object_name=$post_title");
 }
 function simple_history_edit_attachment($attachment_id) {
 	// is this only being called if the title of the attachment is changed?!
 	$post = get_post($attachment_id);
-	$post_title = urlencode($post->post_title);
+	$post_title = urlencode(get_the_title($post->ID));
 	simple_history_add("action=updated&object_type=attachment&object_id=$attachment_id&object_name=$post_title");
 }
 function simple_history_delete_attachment($attachment_id) {
 	$post = get_post($attachment_id);
-	$post_title = urlencode($post->post_title);
+	$post_title = urlencode(get_the_title($post->ID));
 	simple_history_add("action=deleted&object_type=attachment&object_id=$attachment_id&object_name=$post_title");
 }
 
@@ -515,7 +495,7 @@ function simple_history_delete_post($post_id) {
 	if (wp_is_post_revision($post_id) == false) {
 		$post = get_post($post_id);
 		if ($post->post_status != "auto-draft" && $post->post_status != "inherit") {
-			$post_title = urlencode($post->post_title);
+			$post_title = urlencode(get_the_title($post->ID));
 			simple_history_add("action=deleted&object_type=post&object_subtype=" . $post->post_type . "&object_id=$post_id&object_name=$post_title");
 		}
 	}
@@ -577,7 +557,8 @@ function simple_history_transition_post_status($new_status, $old_status, $post) 
 		return; 
 	}
 	
-	$post_title = urlencode($post->post_title);
+	$post_title = get_the_title($post->ID);
+	$post_title = urlencode($post_title);
 	
 	simple_history_add("action=$action&object_type=$object_type&object_subtype=$object_subtype&object_id=$object_id&object_name=$post_title");
 }
@@ -827,7 +808,7 @@ function simple_history_print_nav() {
 		}
 		$link = esc_html(add_query_arg("simple_history_user_to_show", ""));
 		#echo "<li>Filter by user: </li>";
-		$str_users .= "<li $css><a href='$link'>By all users</a> | </li>";
+		$str_users .= "<li $css><a href='$link'>" . __("By all users", 'simple-history') ."</a> | </li>";
 		foreach ($arr_users as $user_id => $user_info) {
 			$link = esc_html(add_query_arg("simple_history_user_to_show", $user_id));
 			$css = "";
@@ -1044,7 +1025,7 @@ function simple_history_print_history($args = null) {
 					}
 				}
 			} else {
-				$who .= "&lt;Unknown or deleted user&gt;";
+				$who .= "&lt;" . __("Unknown or deleted user", 'simple-history') ."&gt;";
 			}
 			$who .= "</span>";
 			
@@ -1063,18 +1044,19 @@ function simple_history_print_history($args = null) {
 						$post_out .= " <span class='simple-history-title'>&lt;unknown name&gt;</span>";
 					}
 				} else {
-					$title = esc_html($post->post_title);
+					#$title = esc_html($post->post_title);
+					$title = get_the_title($post->ID);
 					$edit_link = get_edit_post_link($object_id, 'display');
 					$post_out .= " <a href='$edit_link'>";
 					$post_out .= "<span class='simple-history-title'>{$title}</span>";
 					$post_out .= "</a>";
 				}
 				if ("created" == $action) {
-					$post_out .= " created ";
+					$post_out .= " " . __("created", 'simple-history') . " ";
 				} elseif ("updated" == $action) {
-					$post_out .= " updated ";
+					$post_out .= " " . __("updated", 'simple-history') . " ";
 				} elseif ("deleted" == $action) {
-					$post_out .= " deleted";
+					$post_out .= " " . __("deleted", 'simple-history') . " ";
 				} else {
 					$post_out .= " $action";
 				}
@@ -1090,7 +1072,8 @@ function simple_history_print_history($args = null) {
 				$post = get_post($object_id);
 				
 				if ($post) {
-					$title = $post->post_title;
+					#$title = $post->post_title;
+					$title = urlencode(get_the_title($post->ID));					
 					$edit_link = get_edit_post_link($object_id, 'display');
 					$attachment_image_src = wp_get_attachment_image_src($object_id, array(50,50), true);
 					$attachment_image = "";
@@ -1162,15 +1145,15 @@ function simple_history_print_history($args = null) {
 				}
 
 				if ("created" == $action) {
-					$user_out .=  " added ";
+					$user_out .=  " " . __("added", 'simple-history') . " ";
 				} elseif ("updated" == $action) {
-					$user_out .= " updated ";
+					$user_out .= " " . __("updated", 'simple-history') . " " ;
 				} elseif ("deleted" == $action) {
-					$user_out .= " deleted ";
+					$user_out .= " " . __("deleted", 'simple-history') . " ";
 				} elseif ("logged_in" == $action) {
-					$user_out .= " logged in";
+					$user_out .= " " . __("logged in", 'simple-history') . " ";
 				} elseif ("logged_out" == $action) {
-					$user_out .= " logged out";
+					$user_out .= " " . __("logged out", 'simple-history') . " ";
 				} else {
 					$user_out .= " $action";
 				}
@@ -1204,9 +1187,11 @@ function simple_history_print_history($args = null) {
 			if ($num_occasions > 0) {
 				echo "<div class='third'>";
 				if ($num_occasions == 1) {
-					echo "<a class='simple-history-occasion-show' href='#'>+ 1 occasion</a>";
+					$one_occasion = __("+ 1 occasion", 'simple-history');
+					echo "<a class='simple-history-occasion-show' href='#'>$one_occasion</a>";
 				} else {
-					echo "<a class='simple-history-occasion-show' href='#'>+ $num_occasions occasions</a>";
+					$many_occasion = sprintf(__("+ %d occasions", 'simple-history'), $num_occasions);
+					echo "<a class='simple-history-occasion-show' href='#'>$many_occasion</a>";
 				}
 				echo "<ul class='simple-history-occasions hidden'>";
 				foreach ($occasions as $one_occasion) {
@@ -1233,19 +1218,24 @@ function simple_history_print_history($args = null) {
 		}
 		
 		if (!$args["is_ajax"]) {
+			$show_more = sprintf(__("Show %d more", 'simple-history'), $args[items]);
+			$loading = __("Loading...", 'simple-history');
+			$no_more_found = __("No more history items found.", 'simple-history');
 			echo "</ol>
 			</div>
-			<p id='simple-history-load-more'><a href='#'>Show $args[items] more</a></p>
-			<p class='hidden' id='simple-history-load-more-loading'>Loading...</p>
-			<p class='hidden' id='simple-history-no-more-items'>No more history items found.</p>
+			<p id='simple-history-load-more'><a href='#'>$show_more</a></p>
+			<p class='hidden' id='simple-history-load-more-loading'>$loading</p>
+			<p class='hidden' id='simple-history-no-more-items'>$no_more_found</p>
 			";
 		}
 	} else {
 		if ($args["is_ajax"]) {
 			echo "simpleHistoryNoMoreItems";
 		} else {
-			echo "<p>No history items found.</p>";
-			echo "<p>Please note that Simple History only records things that happen after this plugin have been installed.</p>";
+			$no_found = __("No history items found.", 'simple-history');
+			$please_note = __("Please note that Simple History only records things that happen after this plugin have been installed.", 'simple-history');
+			echo "<p>$no_found</p>";
+			echo "<p>$please_note</p>";
 		}
 		
 	}
