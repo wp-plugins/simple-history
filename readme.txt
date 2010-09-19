@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: 0.3.5
+Stable tag: 0.3.6
 
 View changes made by users within WordPress. It’s a history/change log/audit/recent changes-plugin.
 
