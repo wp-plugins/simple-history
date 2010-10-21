@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: eskapism
+Contributors: eskapism, MarsApril
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
