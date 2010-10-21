@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.6");
+define( "SIMPLE_HISTORY_VERSION", "0.3.7");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -715,6 +715,11 @@ function simple_history_install() {
 	#}
 
 	simple_history_add("action=activated&object_type=plugin&object_name=$plugin_name");
+	
+	// also generate a rss secret, if it does not exist
+	if (!get_option("simple_history_rss_secret")) {
+		simple_history_update_rss_secret();
+	}
 
 }
 

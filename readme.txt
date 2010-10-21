@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: 0.3.6
+Stable tag: 0.3.7
 
 View changes made by users within WordPress. It’s a history/change log/audit/recent changes-plugin.
 
@@ -62,7 +62,11 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 3. The RSS feed with changes, as shown in Firefox.
 
+
 == Changelog ==
+
+= 0.3.7 =
+- Directly after installation of Simple History you could view the history RSS feed without using any secret. Now a secret is automatically set during installation.
 
 = 0.3.6 =
 - Made the RSS-feature a bit easier to find: added a RSS-icon to the dashboard window - it's very discrete, you can find it at the bottom right corner. On the Simple History page it's a bit more clear, at the bottom, with text and all. Enjoy!
