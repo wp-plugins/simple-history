@@ -6,21 +6,21 @@ Requires at least: 2.9.2
 Tested up to: 3.0
 Stable tag: 0.3.7
 
-View changes made by users within WordPress. It’s a history/change log/audit/recent changes-plugin.
+View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
 == Description ==
 
-Simple History is a plugin that shows recent changes made within WordPress.
+Simple History shows recent changes made within WordPress, directly on your dashboard or on a separate page.
 
-Users of the system can see what articles have been created, modified or deleted,
+Users of the system can **see what articles have been created, modified or deleted,
 what attachments have been uploaded, modified or deleted, and what plugins that have been
-activated or deactivated.
+activated or deactivated**.
 
-All changes are also avaialable as a RSS feed som you can keep track of the changes made
-via your favorite RSS reader on your phone, on your iPad, or on your computer. Or any where you like.
+All **changes are also v as a RSS feed** so you can keep track of the changes made
+via your favorite RSS reader on your phone, on your iPad, or on your computer..
 
-It’s a pretty good plugin to have on websites where several people are 
-involved.
+It’s a plugin that is good to have on websites where several people are 
+involved in editing the content.
 
 #### Example scenarios
 
@@ -38,7 +38,7 @@ See the plugin in action with this short screencast:
 
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
-* Check out some [more plugins](http://wordpress.org/extend/plugins/profile/eskapism) by the same author.
+* More [WordPress CMS plugins](http://wordpress.org/extend/plugins/profile/eskapism) by the same author.
 
 == Installation ==
 
