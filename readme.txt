@@ -36,6 +36,11 @@ that must be it."_
 See the plugin in action with this short screencast:
 [youtube http://www.youtube.com/watch?v=4cu4kooJBzs]
 
+#### Add your own events to simple history
+If you are a plugin developer and would like to add your own things/events to Simple History
+you can do that by calling the function simple_history_add like this:
+`<?php simple_history_add("action=repaired&object_type=starship&object_name=USS Enterprise"); ?>`
+
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
 * More [WordPress CMS plugins](http://wordpress.org/extend/plugins/profile/eskapism) by the same author.
