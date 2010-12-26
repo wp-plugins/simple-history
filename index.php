@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.7
+Version: 0.3.8
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.7");
+define( "SIMPLE_HISTORY_VERSION", "0.3.8");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -151,7 +151,7 @@ function simple_history_init() {
 					      <item>
 					         <title><![CDATA[<?php echo $item_title; ?>]]></title>
 					         <description><![CDATA[<?php echo $description ?>]]></description>
-					         <pubDate><?php echo date("D, d M Y H:i:s", $one_item->date_unix) ?> GMT</pubDate>
+					         <pubDate><?php echo date("D, d M Y H:i:s", strtotime($one_item->date)) ?> GMT</pubDate>
 					         <guid isPermaLink="false"><?php echo $item_guid ?></guid>
 					      </item>
 						<?php
@@ -595,58 +595,17 @@ function simple_history_add($args) {
 		$current_user = wp_get_current_user();
 		$current_user_id = (int) $current_user->ID;
 	}
-	$sql = "INSERT INTO {$tableprefix}simple_history SET date = now(), action = '$action', object_type = '$object_type', object_subtype = '$object_subtype', user_id = '$current_user_id', object_id = '$object_id', object_name = '$object_name'";
+	
+	// date, store at utc or local time
+	// anything is better than now() anyway!
+	// WP seems to use the local time, so I will go with that too I think
+	// GMT/UTC-time is: date_i18n($timezone_format, false, 'gmt')); 
+	// local time is: date_i18n($timezone_format));
+	$localtime = current_time("mysql");
+	$sql = "INSERT INTO {$tableprefix}simple_history SET date = '$localtime', action = '$action', object_type = '$object_type', object_subtype = '$object_subtype', user_id = '$current_user_id', object_id = '$object_id', object_name = '$object_name'";
 	$wpdb->query($sql);
 }
 
-
-// Returns an English representation of a past date within the last month
-// Graciously stolen from http://ejohn.org/files/pretty.js
-// ..and simple_history stole it even more graciously from simple-php-framework http://github.com/tylerhall/simple-php-framework/
-function simple_history_time2str($ts) {
-    #if(!ctype_digit($ts))
-    #   $ts = strtotime($ts);
-
-    $diff = time() - $ts;
-    if($diff == 0)
-        return 'now';
-    elseif($diff > 0)
-    {
-        $day_diff = floor($diff / 86400);
-        if($day_diff == 0)
-        {
-            if($diff < 60) return 'just now';
-            if($diff < 120) return '1 minute ago';
-            if($diff < 3600) return floor($diff / 60) . ' minutes ago';
-            if($diff < 7200) return '1 hour ago';
-            if($diff < 86400) return floor($diff / 3600) . ' hours ago';
-        }
-        if($day_diff == 1) return 'Yesterday';
-        if($day_diff < 7) return $day_diff . ' days ago';
-        if($day_diff < 31) return ceil($day_diff / 7) . ' weeks ago';
-        if($day_diff < 60) return 'last month';
-        return date('F Y', $ts);
-    }
-    else
-    {
-        $diff = abs($diff);
-        $day_diff = floor($diff / 86400);
-        if($day_diff == 0)
-        {
-            if($diff < 120) return 'in a minute';
-            if($diff < 3600) return 'in ' . floor($diff / 60) . ' minutes';
-            if($diff < 7200) return 'in an hour';
-            if($diff < 86400) return 'in ' . floor($diff / 3600) . ' hours';
-        }
-        if($day_diff == 1) return 'Tomorrow';
-        if($day_diff < 4) return date('l', $ts);
-        if($day_diff < 7 + (7 - date('w'))) return 'next week';
-        if(ceil($day_diff / 7) < 4) return 'in ' . ceil($day_diff / 7) . ' weeks';
-        if(date('n', $ts) == date('n') + 1) return 'next month';
-        #return date('F Y', $ts);
-        return $ts; // return back and let us do something else with it
-    }
-}
 
 function simple_history_purge_db() {
 	global $wpdb;
@@ -877,7 +836,7 @@ function simple_history_get_items_array($args) {
 	$limit_items = $args["items"];
 	$sql_limit = " LIMIT $limit_page, $args[items]";
 
-	$sql = "SELECT *, UNIX_TIMESTAMP(date) as date_unix FROM {$tableprefix}simple_history $where ORDER BY date DESC ";
+	$sql = "SELECT * FROM {$tableprefix}simple_history $where ORDER BY date DESC ";
 	$rows = $wpdb->get_results($sql);
 	
 	$loopNum = 0;
@@ -976,7 +935,6 @@ function simple_history_print_history($args = null) {
 				    [object_subtype] => page
 				    [user_id] => 1
 				    [object_id] => 732
-				    [date_unix] => 1278184123
 				    [occasions] => array
 				)				
 			*/
@@ -1187,7 +1145,9 @@ function simple_history_print_history($args = null) {
 			$date_i18n_date = date_i18n(get_option('date_format'), strtotime($one_row->date), $gmt=false);
 			$date_i18n_time = date_i18n(get_option('time_format'), strtotime($one_row->date), $gmt=false);		
 			echo "By $who, ";
-			echo "<span class='when'>".simple_history_time2str($one_row->date_unix)."</span>";
+			$now = strtotime(current_time("mysql"));
+			$diff_str = sprintf( __('%s ago'), human_time_diff(strtotime($one_row->date), $now) );
+			echo "<span class='when'>".$diff_str."</span>";
 			echo "<span class='when_detail'>$date_i18n_date at $date_i18n_time</span>";
 			echo "</div>";
 
@@ -1206,7 +1166,7 @@ function simple_history_print_history($args = null) {
 					echo "<li>";
 					$date_i18n_date = date_i18n(get_option('date_format'), strtotime($one_occasion->date), $gmt=false);
 					$date_i18n_time = date_i18n(get_option('time_format'), strtotime($one_occasion->date), $gmt=false);		
-					echo simple_history_time2str($one_occasion->date_unix) . " ($date_i18n_date at $date_i18n_time)";
+					echo sprintf( __('%s ago (%s at %s)', "simple-history"), human_time_diff(strtotime($one_occasion->date), $now), $date_i18n_date, $date_i18n_time );
 
 					echo "</li>";
 				}
