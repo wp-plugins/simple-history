@@ -12,12 +12,13 @@ View changes made by users within WordPress. See who created a page, uploaded an
 
 Simple History shows recent changes made within WordPress, directly on your dashboard or on a separate page.
 
-Users of the system can **see what articles have been created, modified or deleted,
-what attachments have been uploaded, modified or deleted, and what plugins that have been
-activated or deactivated**.
+Users of the system can
+* see what articles have been created, modified or deleted
+* see what attachments have been uploaded, modified or deleted
+* see what plugins that have been activated or deactivated
 
-All **changes are also v as a RSS feed** so you can keep track of the changes made
-via your favorite RSS reader on your phone, on your iPad, or on your computer..
+All **changes are also available as a RSS feed** so you can keep track of the changes made
+via your favorite RSS reader on your phone, on your iPad, or on your computer.
 
 It’s a plugin that is good to have on websites where several people are 
 involved in editing the content.
