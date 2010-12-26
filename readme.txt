@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: 0.3.7
+Stable tag: 0.3.8
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -39,6 +39,11 @@ See the plugin in action with this short screencast:
 #### Add your own events to simple history
 If you are a plugin developer and would like to add your own things/events to Simple History
 you can do that by calling the function simple_history_add like this:
+`<?php
+# will return “Plugin your_plugin_name Edited”
+simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+?>`
+
 `<?php simple_history_add("action=repaired&object_type=starship&object_name=USS Enterprise"); ?>`
 
 #### Donation and more plugins
@@ -69,6 +74,11 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 
 == Changelog ==
+
+= 0.3.8 =
+- Added chinese translation
+- Uses WordPress own human_time_diff() instead of own version
+- Fix for time zones
 
 = 0.3.7 =
 - Directly after installation of Simple History you could view the history RSS feed without using any secret. Now a secret is automatically set during installation.
