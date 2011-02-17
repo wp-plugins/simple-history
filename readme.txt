@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: 0.3.8
+Stable tag: 0.3.9
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -13,6 +13,7 @@ View changes made by users within WordPress. See who created a page, uploaded an
 Simple History shows recent changes made within WordPress, directly on your dashboard or on a separate page.
 
 Users of the system can
+
 * see what articles have been created, modified or deleted
 * see what attachments have been uploaded, modified or deleted
 * see what plugins that have been activated or deactivated
@@ -75,6 +76,10 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 
 == Changelog ==
+
+= 0.3.9 =
+- Attachment names were urlencoded and looked wierd. Now they're not.
+- Started to store plugin version number
 
 = 0.3.8 =
 - Added chinese translation

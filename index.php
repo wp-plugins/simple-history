@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.8
+Version: 0.3.9
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.8");
+define( "SIMPLE_HISTORY_VERSION", "0.3.9");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -252,6 +252,9 @@ function simple_history_settings_field() {
 	<label for="simple_history_show_as_page"><?php _e("as a page under the tools menu", 'simple-history') ?></label>
 	
 	<?php
+	#$version = get_option("simple_history_version", "0.3.8");
+	#echo "<br><br>version: $version";
+	#update_option("simple_history_rss_secret", $rss_secret);
 }
 
 function simple_history_get_rss_address() {
@@ -641,12 +644,8 @@ if (!function_exists("bonny_d")) {
 }
 
 // when activating plugin: create tables
-#register_activation_hook( __FILE__, 'simple_history_install' );
-#echo "<br>" . WP_PLUGIN_DIR . "/simple-history/index.php";
-#echo plugin_basename(__FILE__);
 // __FILE__ doesnt work for me because of soft linkes directories
 register_activation_hook( WP_PLUGIN_DIR . "/simple-history/index.php" , 'simple_history_install' );
-
 function simple_history_install() {
 
 	global $wpdb;
@@ -679,6 +678,8 @@ function simple_history_install() {
 	if (!get_option("simple_history_rss_secret")) {
 		simple_history_update_rss_secret();
 	}
+	
+	update_option("simple_history_version", SIMPLE_HISTORY_VERSION);
 
 }
 
@@ -1038,8 +1039,7 @@ function simple_history_print_history($args = null) {
 				$post = get_post($object_id);
 				
 				if ($post) {
-					#$title = $post->post_title;
-					$title = urlencode(get_the_title($post->ID));					
+					$title = esc_html(get_the_title($post->ID));
 					$edit_link = get_edit_post_link($object_id, 'display');
 					$attachment_image_src = wp_get_attachment_image_src($object_id, array(50,50), true);
 					$attachment_image = "";
@@ -1051,7 +1051,6 @@ function simple_history_print_history($args = null) {
 					$attachment_out .= "<span class='simple-history-title'>{$title}</span>";
 					$attachment_out .= "</a>";
 					
-					#echo " (".get_post_mime_type($object_id).")";
 				} else {
 					if ($object_name) {
 						$attachment_out .= "<span class='simple-history-title'>\"" . esc_html($object_name) . "\"</span>";
@@ -1072,8 +1071,6 @@ function simple_history_print_history($args = null) {
 				
 				$attachment_out = ucfirst($attachment_out);
 				echo $attachment_out;
-				#echo " <span class='simple-history-discrete'>(".get_post_mime_type($object_id).")</span>";
-
 
 			} elseif ("user" == $object_type) {
 				$user_out = "";
