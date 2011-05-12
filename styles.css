@@ -136,3 +136,13 @@ ul.simple-history-occasions li {
 }
 #simple-history-rss-feed-page a {
 }
+
+.simple-history-settings-page-updated {
+	font-weight: bold;
+	margin: 5px 0 15px;
+	background-color: #FFFFE0;
+	border: 1px solid #E6DB55;
+}
+.simple-history-settings-page-updated p {
+	margin: 0.5em !important;
+}
