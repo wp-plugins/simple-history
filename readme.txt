@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: 0.3.9
+Stable tag: 0.3.10
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -74,8 +74,12 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 3. The RSS feed with changes, as shown in Firefox.
 
-
 == Changelog ==
+
+= 0.3.10 =
+- Added chinese translation
+- Fixed a variable notice
+- More visible ok-message after setting a new RSS secret
 
 = 0.3.9 =
 - Attachment names were urlencoded and looked wierd. Now they're not.

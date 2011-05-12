@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log of the changes made by users in WordPress.
-Version: 0.3.9
+Version: 0.3.10
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -25,7 +25,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( "SIMPLE_HISTORY_VERSION", "0.3.9");
+define( "SIMPLE_HISTORY_VERSION", "0.3.10");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -227,7 +227,8 @@ function simple_history_admin_init() {
 
 }
 function simple_history_settings_page() {
-	// leave empty. must exist.
+	// never remove this function, it must exist.
+	echo "<div id='simple-history-settings-page'></div>";
 }
 
 function simple_history_setting_show_on_dashboard() {
@@ -277,14 +278,17 @@ function simple_history_settings_field_rss() {
 	?>
 	<?php
 	$create_new_secret = false;
+	/*
+	// eeek! why was this here?
 	if ($rss_secret == false) {
 		$create_new_secret = true;
 	}
-	if ($_GET["simple_history_rss_update_secret"]) {
+	*/
+	if (isset($_GET["simple_history_rss_update_secret"]) && $_GET["simple_history_rss_update_secret"]) {
 		$create_new_secret = true;
-		echo "<p class='updated'>";
+		echo "<div class='simple-history-settings-page-updated'><p>";
 		_e("Created new secret RSS adress", 'simple-history');
-		echo "</p>";
+		echo "</p></div>";
 	}
 	
 	if ($create_new_secret) {
@@ -297,7 +301,7 @@ function simple_history_settings_field_rss() {
 	_e("This is a secret RSS feed for Simple History. Only share the link with people you trust", 'simple-history');
 	echo "<br />";
 	$update_link = add_query_arg("simple_history_rss_update_secret", "1");
-	printf(__("You can <a href='%s'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands.", 'simple-history'), $update_link);
+	printf(__("You can <a href='%s#simple-history-settings-page'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands.", 'simple-history'), $update_link);
 }
 
 // @todo: move all add-related stuff to own file? there are so many of them.. kinda confusing, ey.
