@@ -146,3 +146,6 @@ ul.simple-history-occasions li {
 .simple-history-settings-page-updated p {
 	margin: 0.5em !important;
 }
+.simple-history-filter-search input[type=button] {
+	cursor: pointer;
+}

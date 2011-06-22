@@ -2,7 +2,7 @@
 /*
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
-Description: Get a log of the changes made by users in WordPress.
+Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
 Version: 0.3.11
 Author: Pär Thernström
 Author URI: http://eskapism.se/
@@ -48,12 +48,18 @@ function simple_history_ajax() {
 	if (isset($_POST["page"])) {
 		$page = (int) $_POST["page"];
 	}
+	
+	$items = (int) (isset($_POST["items"])) ? $_POST["items"] : 5;
+
+	$search = (isset($_POST["search"])) ? $_POST["search"] : "";
 
 	$args = array(
 		"is_ajax" => true,
 		"filter_type" => $type,
 		"filter_user" => $user,
-		"page" => $page
+		"page" => $page,
+		"items" => $items,
+		"search" => $search 
 	);
 	simple_history_print_history($args);
 	exit;
@@ -794,6 +800,14 @@ function simple_history_print_nav() {
 		$str_users = str_replace("| </li></ul>", "</li></ul>", $str_users);
 		echo $str_users;
 	}
+	
+	// search
+	$str_search = __("Search", 'simple-history');
+	$search = "<p class='simple-history-filter simple-history-filter-search'>
+		<input type='text' />
+		<input type='button' value='$str_search' />
+	</p>";
+	echo $search;
 
 
 }
@@ -809,10 +823,11 @@ function simple_history_get_items_array($args) {
 		"items" => 5,
 		"filter_type" => "",
 		"filter_user" => "",
-		"is_ajax" => false
+		"is_ajax" => false,
+		"search" => ""
 	);
 	$args = wp_parse_args( $args, $defaults );
-
+	// echo "<pre>";print_r($args);echo "</pre>";
 	$simple_history_type_to_show = $args["filter_type"];
 	$simple_history_user_to_show = $args["filter_user"];
 	
@@ -847,6 +862,8 @@ function simple_history_get_items_array($args) {
 	$loopNum = 0;
 	$real_loop_num = -1;
 	
+	$search = strtolower($args["search"]);
+	
 	$arr_events = array();
 	if ($rows) {
 		$prev_row = null;
@@ -866,33 +883,56 @@ function simple_history_get_items_array($args) {
 				$arr_events[$prev_row->id]->occasions[] = $one_row;
 			} else {
 		
-				$real_loop_num++;
+				
 		
 				#echo "<br>real_loop_num: $real_loop_num";
 				#echo "<br>loop_num: $loopNum";
 		
-				if ($args["page"] > 0 && ($args["page"] * $args["items"] > $real_loop_num)) {
+				//  check if we have a search. of so, only add if there is a match
+				$do_add = FALSE;
+				if ($search) {
+					// echo "<br>object_name: $object_name";
+					$object_name_lower = strtolower($one_row->object_name);
+					// echo "<br>search: $search";
+					// echo "<br>object_name: $object_name";
+					if (strpos($object_name_lower, $search) !== FALSE) {
+						$do_add = TRUE;
+					}
+		        } else {
+			        $do_add = TRUE;
+		        }
+		        
+		        if ($do_add) {
+			        $real_loop_num++;
+		        }
+		        
+				if ($do_add && $args["page"] > 0 && ($args["page"] * $args["items"] > $real_loop_num)) {
 					#echo "<br>CONTINUE";
 					continue;
 				}
 				
-				if ($loopNum >= $args["items"]) {
+				// don't fetch more than we need
+				if ($do_add && $loopNum >= $args["items"]) {
 					#echo "<br>BREAK";
 					break;
 				}
 			
 				// new event, not as previous one
-				#echo "<br><br>adding one";
-				$arr_events[$one_row->id] = $one_row;
-				$arr_events[$one_row->id]->occasions = array();
-				
-				$prev_row = $one_row;
-				
-				$loopNum++;
+								
+				if ($do_add) {
+					$arr_events[$one_row->id] = $one_row;
+					$arr_events[$one_row->id]->occasions = array();
+					$loopNum++;
+					$prev_row = $one_row;
+				}
+
 			}
 		}
+		//echo "<pre>";print_r($arr_events);echo "</pre>";
 	}
+	
 	return $arr_events;
+	
 }
 
 // output the log
@@ -900,6 +940,8 @@ function simple_history_get_items_array($args) {
 function simple_history_print_history($args = null) {
 	
 	$arr_events = simple_history_get_items_array($args);
+
+	// echo "<pre>";print_r($arr_events);echo "</pre>";
 
 	$defaults = array(
 		"page" => 0,
@@ -1189,15 +1231,22 @@ function simple_history_print_history($args = null) {
 		
 		if (!$args["is_ajax"]) {
 			// if not ajax, print the divs and stuff we need
-			$show_more = sprintf(__("Show %d more", 'simple-history'), $args["items"]);
+			//$show_more = sprintf(__("Show %d more", 'simple-history'), $args["items"]);
+			$show_more = "<select>";
+			$show_more .= sprintf("<option value='5'>%s</option>", __("Show 5 more", 'simple-history') );
+			$show_more .= sprintf("<option value='15'>%s</option>", __("Show 15 more", 'simple-history') );
+			$show_more .= sprintf("<option value='50'>%s</option>", __("Show 50 more", 'simple-history') );
+			$show_more .= sprintf("<option value='100'>%s</option>", __("Show 100 more", 'simple-history') );
+			$show_more .= "</select>";
+			//$show_more = sprintf(__("Show %s more", 'simple-history'), $show_more);
 			$loading = __("Loading...", 'simple-history');
 			$no_more_found = __("No more history items found.", 'simple-history');
 			$view_rss = __("Simple History RSS feed", 'simple-history');
 			$view_rss_link = simple_history_get_rss_address();
-			
+			$str_show = __("Show", 'simple-history');
 			echo "</ol>
 			</div>
-			<p id='simple-history-load-more'><a href='#'>$show_more</a></p>
+			<p id='simple-history-load-more'>$show_more<input type='button' value='$str_show' /></p>
 			<p class='hidden' id='simple-history-load-more-loading'>$loading</p>
 			<p class='hidden' id='simple-history-no-more-items'>$no_more_found</p>
 			<p id='simple-history-rss-feed-dashboard'><a title='$view_rss' href='$view_rss_link'>$view_rss</a></p>
@@ -1217,4 +1266,3 @@ function simple_history_print_history($args = null) {
 	}
 }
 
-?>

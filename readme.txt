@@ -12,7 +12,7 @@ View changes made by users within WordPress. See who created a page, uploaded an
 
 Simple History shows recent changes made within WordPress, directly on your dashboard or on a separate page.
 
-Users of the system can
+The plugin works as a log/history/audit log/version history of all (most, anyway) events that occur in WordPress. For example:
 
 * see what articles have been created, modified or deleted
 * see what attachments have been uploaded, modified or deleted
