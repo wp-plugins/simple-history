@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.0
-Stable tag: 0.3.11
+Stable tag: 0.4
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -17,8 +17,9 @@ The plugin works as a log/history/audit log/version history of all (most, anyway
 * see what articles have been created, modified or deleted
 * see what attachments have been uploaded, modified or deleted
 * see what plugins that have been activated or deactivated
+* search through the history/log to find the change/post/article you are looking for
 
-All **changes are also available as a RSS feed** so you can keep track of the changes made
+There is also a **RSS feed of changes** available, so you can keep track of the changes made
 via your favorite RSS reader on your phone, on your iPad, or on your computer.
 
 It’s a plugin that is good to have on websites where several people are 
@@ -75,6 +76,10 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 0.4 =
+- Added: Now you can search the history
+- Added: Choose if you wan't to load/show more than just 5 rows from the history
 
 = 0.3.11 =
 - Fixed: titles are now escaped
