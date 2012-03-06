@@ -49,6 +49,14 @@ simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_nam
 
 `<?php simple_history_add("action=repaired&object_type=starship&object_name=USS Enterprise"); ?>`
 
+####  Translations/Languages
+
+This plugin is available in the following languages:
+
+* English
+* German
+* Simplified Chinese
+
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
 * More [WordPress CMS plugins](http://wordpress.org/extend/plugins/profile/eskapism) by the same author.

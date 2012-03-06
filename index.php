@@ -717,7 +717,8 @@ function simple_history_print_nav() {
 
 	// add_query_arg(
 	$link = esc_html(add_query_arg("simple_history_type_to_show", ""));
-	$str_types .= "<li $css><a href='$link'>All types</a> | </li>";
+	$str_types_desc = __("All types", 'simple-history');
+	$str_types .= "<li $css><a href='$link'>$str_types_desc</a> | </li>";
 	foreach ($arr_types as $one_type) {
 		$css = "";
 		if ($one_type->object_subtype && $simple_history_type_to_show == ($one_type->object_type."/".$one_type->object_subtype)) {
