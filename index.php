@@ -157,6 +157,7 @@ function simple_history_init() {
 					      <item>
 					         <title><![CDATA[<?php echo $item_title; ?>]]></title>
 					         <description><![CDATA[<?php echo $description ?>]]></description>
+					         <author><?php echo $user_nicename ?></author>
 					         <pubDate><?php echo date("D, d M Y H:i:s", strtotime($one_item->date)) ?> GMT</pubDate>
 					         <guid isPermaLink="false"><?php echo $item_guid ?></guid>
 					      </item>
