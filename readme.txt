@@ -77,6 +77,10 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
+= 0.x =
+- Added author to RSS
+- Added german translation
+
 = 0.4 =
 - Added: Now you can search the history
 - Added: Choose if you wan't to load/show more than just 5 rows from the history

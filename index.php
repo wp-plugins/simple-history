@@ -717,7 +717,6 @@ function simple_history_print_nav() {
 
 	// add_query_arg(
 	$link = esc_html(add_query_arg("simple_history_type_to_show", ""));
-	#echo "<li>Filter by type: </li>";
 	$str_types .= "<li $css><a href='$link'>All types</a> | </li>";
 	foreach ($arr_types as $one_type) {
 		$css = "";
@@ -783,7 +782,6 @@ function simple_history_print_nav() {
 			$css = " class='selected' ";
 		}
 		$link = esc_html(add_query_arg("simple_history_user_to_show", ""));
-		#echo "<li>Filter by user: </li>";
 		$str_users .= "<li $css><a href='$link'>" . __("By all users", 'simple-history') ."</a> | </li>";
 		foreach ($arr_users as $user_id => $user_info) {
 			$link = esc_html(add_query_arg("simple_history_user_to_show", $user_id));
@@ -883,12 +881,10 @@ function simple_history_get_items_array($args) {
 				// so add it to the last element in arr_events
 				$arr_events[$prev_row->id]->occasions[] = $one_row;
 			} else {
-		
-				
-		
+
 				#echo "<br>real_loop_num: $real_loop_num";
 				#echo "<br>loop_num: $loopNum";
-		
+				
 				//  check if we have a search. of so, only add if there is a match
 				$do_add = FALSE;
 				if ($search) {
@@ -1122,7 +1118,7 @@ function simple_history_print_history($args = null) {
 
 			} elseif ("user" == $object_type) {
 				$user_out = "";
-				$user_out .= "user";
+				$user_out .= __("user", 'simple-history');
 				$user = get_user_by("id", $object_id);
 				if ($user) {
 					$user_link = "user-edit.php?user_id={$user->ID}";
@@ -1180,7 +1176,25 @@ function simple_history_print_history($args = null) {
 			} else {
 
 				// unknown/general type
-				echo ucwords($object_type) . " $object_subtype <span class='simple-history-title'>\"$object_name\"</span> $action";
+				// translate the common types
+				$unknown_action = $action;
+				switch ($unknown_action) {
+					case "activated":
+						$unknown_action = __("activated", 'simple-history');
+						break;
+					case "deactivated":
+						$unknown_action = __("deactivated", 'simple-history');
+						break;
+						case "enabled":
+						$unknown_action = __("enabled", 'simple-history');
+						break;
+					case "disabled":
+						$unknown_action = __("disabled", 'simple-history');
+						break;
+					default:
+						$unknown_action = $unknown_action; // dah!
+				}
+				echo ucwords($object_type) . " $object_subtype <span class='simple-history-title'>\"$object_name\"</span> $unknown_action";
 
 			}
 			echo "</div>";
