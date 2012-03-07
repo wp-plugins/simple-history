@@ -3,7 +3,8 @@
  *  load history items via ajax
  */
 var simple_history_current_page = 0;
-jQuery(".simple-history-filter a").live("click", function() {
+jQuery(".simple-history-filter a, .simple-history-filter input[type='button']").live("click", function() {
+
 	$t = jQuery(this);
 	$t.closest("ul").find("li").removeClass("selected");
 	$t.closest("li").addClass("selected");
@@ -18,11 +19,14 @@ jQuery(".simple-history-filter a").live("click", function() {
 	$ol.fadeOut("fast");
 	jQuery("#simple-history-no-more-items").hide();
 
+	var search = jQuery("p.simple-history-filter-search input[type='text']").val();
+
 	simple_history_current_page = 0;
 	var data = {
 		"action": "simple_history_ajax",
-		"type": jQuery(".simple-history-filter-type li.selected a").text(),
-		"user": jQuery(".simple-history-filter-user li.selected a").text()
+		"type": jQuery("ul.simple-history-filter-type li.selected a").text(),
+		"user": jQuery("ul.simple-history-filter-user li.selected a").text(),
+		"search": search
 	};
 	jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
 		if (data == "simpleHistoryNoMoreItems") {
@@ -40,17 +44,24 @@ jQuery(".simple-history-filter a").live("click", function() {
 	return false;
 });
 
-jQuery("#simple-history-load-more a").live("click", function() {
+jQuery("#simple-history-load-more a, #simple-history-load-more input[type='button']").live("click", function() {
+
 	simple_history_current_page++;
 
+	var num_to_get = jQuery(this).prev("select").find(":selected").val();
+
 	jQuery("#simple-history-load-more,#simple-history-load-more-loading").toggle();
+	
+	var search = jQuery("p.simple-history-filter-search input[type='text']").val();
 	
 	$ol = jQuery("ol.simple-history:last");
 	var data = {
 		"action": "simple_history_ajax",
 		"type": jQuery(".simple-history-filter-type li.selected a").text(),
 		"user": jQuery(".simple-history-filter-user li.selected a").text(),
-		"page": simple_history_current_page
+		"page": simple_history_current_page,
+		"items": num_to_get,
+		"search": search
 	};
 	jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
 	
