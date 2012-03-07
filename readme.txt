@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
 Tested up to: 3.3.1
-Stable tag: 0.4
+Stable tag: 0.5
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
