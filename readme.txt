@@ -3,7 +3,7 @@ Contributors: eskapism, MarsApril
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 2.9.2
-Tested up to: 3.0
+Tested up to: 3.3.1
 Stable tag: 0.4
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
@@ -85,9 +85,11 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
-= 0.x =
+= 0.5 =
 - Added author to RSS
-- Added german translation
+- Added german translation, thanks http://www.fuerther-freiheit.info/
+- Added swedish translation, thanks http://jockegustin.se
+- Better support for translation
 
 = 0.4 =
 - Added: Now you can search the history
