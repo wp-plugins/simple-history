@@ -14,18 +14,18 @@
 
 ol.simple-history {
 	list-style-type: none;
-	margin: 0;
+	margin: 0 -10px;
 	padding: 0;
 }
-ol.simple-history li {
-	margin-bottom: 1.5em;
-	margin-top: 1.5em;
-	/*
-	xpadding-bottom: 1em;
-	xborder-bottom: 1px solid #eee;
-	*/
+ol.simple-history > li {
+	margin: 0;
+	padding: 10px 10px;
 	position: relative;
 	line-height: 1.5;
+	border-top: 1px solid #DFDFDF;
+}
+ol.simple-history > li:nth-child(odd) {
+	background-color:  #FCFCFC;
 }
 ol.simple-history .first {
 	font-size: 13px;

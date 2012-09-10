@@ -85,6 +85,12 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
+= 0.x =
+- Changed widget name to just "History" instead of "Simple History". Keep it simple. (Previous name implied there also was an "Advanced History" somewhere.)
+- Made the widget look a bit WordPress-ish by borrwing some of the looks from the comments widget.
+- Fix for database that didn't use UTF-8 (sorry international users!)
+- Some security fixes
+
 = 0.5 =
 - Added author to RSS
 - Added german translation, thanks http://www.fuerther-freiheit.info/
