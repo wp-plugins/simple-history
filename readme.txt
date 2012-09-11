@@ -2,9 +2,9 @@
 Contributors: eskapism, MarsApril
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
-Requires at least: 2.9.2
-Tested up to: 3.3.1
-Stable tag: 0.5
+Requires at least: 3.0
+Tested up to: 3.4.2
+Stable tag: 0.6
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -85,11 +85,12 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
-= 0.x =
-- Changed widget name to just "History" instead of "Simple History". Keep it simple. (Previous name implied there also was an "Advanced History" somewhere.)
+= 0.6 =
+- Changed widget name to just "History" instead of "Simple History". Keep it simple. Previous name implied there also was an "Advanced History" somewhere.
 - Made the widget look a bit WordPress-ish by borrwing some of the looks from the comments widget.
 - Fix for database that didn't use UTF-8 (sorry international users!)
 - Some security fixes
+- Updated POT-file
 
 = 0.5 =
 - Added author to RSS
