@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 0.6
+Version: 0.7
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "0.6");
+define( "SIMPLE_HISTORY_VERSION", "0.7");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -43,8 +43,17 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		add_action( 'admin_menu', 					array($this, 'admin_menu') );
 		add_action( 'wp_dashboard_setup', 			array($this, 'wp_dashboard_setup') );
 		add_action( 'wp_ajax_simple_history_ajax',  array($this, 'ajax') );
+		add_filter( 'plugin_action_links_simple-history/index.php', array($this, "plugin_action_links"), 10, 4);
 		
-	 }
+	}
+
+	function plugin_action_links($actions, $b, $c, $d) {
+		// http://playground.ep/wordpress/wp-admin/options-general.php?page=simple_history_settings_menu_slug
+		$settings_page_url = menu_page_url("simple_history_settings_menu_slug", 0);
+		$actions[] = "<a href='$settings_page_url'>Settings</a>";
+		return $actions;
+		
+	}
 
 	function wp_dashboard_setup() {
 		if (simple_history_setting_show_on_dashboard()) {
@@ -72,13 +81,6 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		add_action("edit_comment", "simple_history_edit_comment");
 		add_action("delete_comment", "simple_history_delete_comment");
 		add_action("wp_set_comment_status", "simple_history_set_comment_status", 10, 2);
-
-		// other things
-		add_settings_section("simple_history_settings_general", SIMPLE_HISTORY_NAME, "simple_history_settings_page", "general");
-		add_settings_field("simple_history_settings_field_1", "Show Simple History", "simple_history_settings_field", "general", "simple_history_settings_general");
-		add_settings_field("simple_history_settings_field_2", "RSS feed", "simple_history_settings_field_rss", "general", "simple_history_settings_general");
-		register_setting("general", "simple_history_show_on_dashboard");
-		register_setting("general", "simple_history_show_as_page");
 		
 		$this->check_upgrade_stuff();
 										 
@@ -135,14 +137,42 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		
 	}
 							 
+	function settings_page() {
+		
+		?>
+		<div class="wrap">
+			<form method="post" action="options.php">
+				<h2><?php _e("Simple History Settings", "simple-history") ?></h2>
+				<?php do_settings_sections("simple_history_settings_menu_slug"); ?>
+				<?php settings_fields("simple_history_settings_group"); ?>
+				<?php submit_button(); ?>
+			</form>
+		</div>
+		<?
+		
+	}
+
 	function admin_menu() {
-	
-		#define( "SIMPLE_HISTORY_PAGE_FILE", menu_page_url("simple_history_page", false)); // no need yet
 	
 		// show as page?
 		if (simple_history_setting_show_as_page()) {
 			add_dashboard_page(SIMPLE_HISTORY_NAME, __("History", 'simple-history'), "edit_pages", "simple_history_page", "simple_history_management_page");
 		}
+
+		// add page for settings
+		$show_settings_page = TRUE;
+		$show_settings_page = apply_filters("simple_history_show_settings_page", $show_settings_page);
+		if ($show_settings_page) {
+			add_options_page(__('Simple History Settings', "simple-history"), SIMPLE_HISTORY_NAME, 'edit_pages', "simple_history_settings_menu_slug", array($this, 'settings_page'));
+		}
+
+		add_settings_section("simple_history_settings_section", __("", "simple-history"), "simple_history_settings_page", "simple_history_settings_menu_slug");
+
+		add_settings_field("simple_history_settings_field_1", __("Show Simple History", "simple-history"), 	"simple_history_settings_field", 		"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_2", __("RSS feed", "simple-history"), 			"simple_history_settings_field_rss", 	"simple_history_settings_menu_slug", "simple_history_settings_section");
+
+		register_setting("simple_history_settings_group", "simple_history_show_on_dashboard");
+		register_setting("simple_history_settings_group", "simple_history_show_as_page");
 	
 	}
 
@@ -189,7 +219,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 							$object_type = ucwords($one_item->object_type);
 							$object_name = esc_html($one_item->object_name);
 							$user = get_user_by("id", $one_item->user_id);
-							$user_nicename = esc_html($user->user_nicename);
+							$user_nicename = esc_html(@$user->user_nicename);
 							$description = "";
 							if ($user_nicename) {
 								$description .= sprintf(__("By %s", 'simple-history'), $user_nicename);
@@ -274,9 +304,8 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 } // class
 
+// Boot up
 $simple_history = new simple_history;
-
-
 
 
 function simple_history_dashboard() {
@@ -286,15 +315,21 @@ function simple_history_dashboard() {
 }
 
 function simple_history_settings_page() {
-	// never remove this function, it must exist.
-	echo "<div id='simple-history-settings-page'></div>";
+	// never remove this function, it must exist.	
+	// echo "Please choose options for simple history ...";
 }
 
+// get settings if plugin should be visible on dasboard. default in no since 0.7
 function simple_history_setting_show_on_dashboard() {
-	return (bool) get_option("simple_history_show_on_dashboard", 1);
+	$show_on_dashboard = get_option("simple_history_show_on_dashboard", 0);
+	$show_on_dashboard = apply_filters("simple_history_show_on_dashboard", $show_on_dashboard);
+	return (bool) $show_on_dashboard;
 }
 function simple_history_setting_show_as_page() {
-	return (bool) get_option("simple_history_show_as_page", 1);
+	$setting = get_option("simple_history_show_as_page", 0);
+	$setting = apply_filters("simple_history_show_as_page", $setting);
+	return (bool) $setting;
+
 }
 
 function simple_history_settings_field() {
@@ -308,7 +343,7 @@ function simple_history_settings_field() {
 	<br />
 	
 	<input <?php echo $show_as_page ? "checked='checked'" : "" ?> type="checkbox" value="1" name="simple_history_show_as_page" id="simple_history_show_as_page" />
-	<label for="simple_history_show_as_page"><?php _e("as a page under the tools menu", 'simple-history') ?></label>
+	<label for="simple_history_show_as_page"><?php _e("as a page under the dashboard menu", 'simple-history') ?></label>
 	
 	<?php
 	#$version = get_option("simple_history_version", "0.3.8");
@@ -680,7 +715,10 @@ function simple_history_add($args) {
 	$wpdb->query($sql);
 }
 
-
+/**
+ * Removes old entries from the db
+ * @todo: let user set value, if any
+ */
 function simple_history_purge_db() {
 	global $wpdb;
 	$tableprefix = $wpdb->prefix;

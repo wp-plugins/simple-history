@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 0.6
+Stable tag: 0.7
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -84,6 +84,12 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 0.7 =
+- Do not show on dashboard by default to avoid clutter. Can be enabled in settings.
+- Add link to settings from plugin list
+- Settings are now available as it's own page under Settings -> Simple Fields. It was previosly on the General settings page and some people had difficulties finding it there.
+- Added filters: simple_history_show_settings_page, simple_history_show_on_dashboard, simple_history_show_as_page
 
 = 0.6 =
 - Changed widget name to just "History" instead of "Simple History". Keep it simple. Previous name implied there also was an "Advanced History" somewhere.
