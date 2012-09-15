@@ -1,10 +1,10 @@
-=== Plugin Name ===
+=== Simple History ===
 Contributors: eskapism, MarsApril
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 0.7.2
+Stable tag: 0.8
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -84,6 +84,15 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 0.8 =
+- Added: now also logs when a user saves any of the built in settings page (general, writing, reading, discussion, media, privacy, and permalinks. What more things do you want to see in the history? Let me know in the [support forum](http://wordpress.org/support/plugin/simple-history).
+- Added: gravatar of user performing action is always shown
+- Fixed: history items that was posts/pages/custom post types now get linked again
+- Fixed: search is triggered on enter (no need to press search button) + search searches object type and object subtype (before it just searched object name)
+- Fixed: showing/loading of new history items was kinda broken. Hopefully fixed and working better than ever now.
+- Plus: even more WordPress-ish looking!
+- Also added donate-links. Tried to keep them discrete. Anyway: please [donate](http://eskapism.se/sida/donate/?utm_source=wordpress&utm_medium=changelog&utm_campaign=simplehistory) if you use this plugin regularly.
 
 = 0.7.2 =
 - Default settings should be to show on page, missed that one. Sorry!
