@@ -85,6 +85,9 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
+= 0.8.1 =
+- Fixed some annoying errors that slipt through testing.
+
 = 0.8 =
 - Added: now also logs when a user saves any of the built in settings page (general, writing, reading, discussion, media, privacy, and permalinks. What more things do you want to see in the history? Let me know in the [support forum](http://wordpress.org/support/plugin/simple-history).
 - Added: gravatar of user performing action is always shown
