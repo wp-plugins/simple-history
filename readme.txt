@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 0.8
+Stable tag: 0.8.1
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -84,6 +84,9 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 0.8.1 =
+- Fixed some annoying errors that slipt through testing.
 
 = 0.8 =
 - Added: now also logs when a user saves any of the built in settings page (general, writing, reading, discussion, media, privacy, and permalinks. What more things do you want to see in the history? Let me know in the [support forum](http://wordpress.org/support/plugin/simple-history).

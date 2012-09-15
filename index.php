@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 0.8
+Version: 0.8.1
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "0.8");
+define( "SIMPLE_HISTORY_VERSION", "0.8.1");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -89,7 +89,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		$arr_option_pages = array("general", "writing", "reading", "discussion", "media", "privacy");
 		foreach ($arr_option_pages as $one_option_page_name) {
 			$new_func = create_function('$capability', '
-					simple_history_add_update_option_page($capability, "'.$one_option_page_name.'");
+					return simple_history_add_update_option_page($capability, "'.$one_option_page_name.'");
 				');
 			add_filter("option_page_capability_{$one_option_page_name}", $new_func);
 		}
@@ -118,19 +118,18 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 	}
 
 	function filter_option_page_capability($capability) {
-		// sf_d($capability); manage_options
 		return $capability;
 	}
 
 	// Add link to donate page. Note to self: does not work on dev install because of dir being trunk and not "simple-history"
 	function action_plugin_row_meta($links, $file) {
 
-		#if ($file == $this->plugin_foldername_and_filename) {
+		if ($file == $this->plugin_foldername_and_filename) {
 			return array_merge(
 				$links,
 				array( sprintf( '<a href="http://eskapism.se/sida/donate/?utm_source=wordpress&utm_medium=pluginpage&utm_campaign=simplehistory">%1$s</a>', __('Donate', "simple-history") ) )
 			);
-		#}
+		}
 		return $links;
 
 	}
@@ -1474,6 +1473,7 @@ function simple_history_add_update_option_page($capability = NULL, $option_page 
 		simple_history_add("action=" . __( 'modified', 'simple-history' ) . "&object_type=" . __('Settings page', 'simple-history') . "&object_id=$option_page&object_name=$option_page_name");
 	}
 
+	return $capability;
 }
 
 // called when updating permalinks
