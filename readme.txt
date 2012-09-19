@@ -1,10 +1,10 @@
-=== Plugin Name ===
+=== Simple History ===
 Contributors: eskapism, MarsApril
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
-Requires at least: 2.9.2
-Tested up to: 3.0
-Stable tag: 0.3.7
+Requires at least: 3.0
+Tested up to: 3.4.2
+Stable tag: 1.0
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -12,12 +12,15 @@ View changes made by users within WordPress. See who created a page, uploaded an
 
 Simple History shows recent changes made within WordPress, directly on your dashboard or on a separate page.
 
-Users of the system can **see what articles have been created, modified or deleted,
-what attachments have been uploaded, modified or deleted, and what plugins that have been
-activated or deactivated**.
+The plugin works as a log/history/audit log/version history of all (most, anyway) events that occur in WordPress. For example:
 
-All **changes are also v as a RSS feed** so you can keep track of the changes made
-via your favorite RSS reader on your phone, on your iPad, or on your computer..
+* see what articles have been created, modified or deleted
+* see what attachments have been uploaded, modified or deleted
+* see what plugins that have been activated or deactivated
+* search through the history/log to find the change/post/article you are looking for
+
+There is also a **RSS feed of changes** available, so you can keep track of the changes made
+via your favorite RSS reader on your phone, on your iPad, or on your computer.
 
 It’s a plugin that is good to have on websites where several people are 
 involved in editing the content.
@@ -39,7 +42,21 @@ See the plugin in action with this short screencast:
 #### Add your own events to simple history
 If you are a plugin developer and would like to add your own things/events to Simple History
 you can do that by calling the function simple_history_add like this:
+`<?php
+# will return “Plugin your_plugin_name Edited”
+simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+?>`
+
 `<?php simple_history_add("action=repaired&object_type=starship&object_name=USS Enterprise"); ?>`
+
+####  Translations/Languages
+
+This plugin is available in the following languages:
+
+* English
+* German
+* Simplified Chinese
+* Swedish
 
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
@@ -67,8 +84,69 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 3. The RSS feed with changes, as shown in Firefox.
 
-
 == Changelog ==
+
+= 1.0 =
+- Added: pagination. Gives you more information, for example the number of items, and quicker access to older history items. Also looks more like the rest of the WordPress GUI.
+- Modified: search now searches type of action (added, modified, deleted, etc.).
+
+= 0.8.1 =
+- Fixed some annoying errors that slipt through testing.
+
+= 0.8 =
+- Added: now also logs when a user saves any of the built in settings page (general, writing, reading, discussion, media, privacy, and permalinks. What more things do you want to see in the history? Let me know in the [support forum](http://wordpress.org/support/plugin/simple-history).
+- Added: gravatar of user performing action is always shown
+- Fixed: history items that was posts/pages/custom post types now get linked again
+- Fixed: search is triggered on enter (no need to press search button) + search searches object type and object subtype (before it just searched object name)
+- Fixed: showing/loading of new history items was kinda broken. Hopefully fixed and working better than ever now.
+- Plus: even more WordPress-ish looking!
+- Also added donate-links. Tried to keep them discrete. Anyway: please [donate](http://eskapism.se/sida/donate/?utm_source=wordpress&utm_medium=changelog&utm_campaign=simplehistory) if you use this plugin regularly.
+
+= 0.7.2 =
+- Default settings should be to show on page, missed that one. Sorry!
+
+= 0.7.1 =
+- Fixed a PHP shorttag
+
+= 0.7 =
+- Do not show on dashboard by default to avoid clutter. Can be enabled in settings.
+- Add link to settings from plugin list
+- Settings are now available as it's own page under Settings -> Simple Fields. It was previosly on the General settings page and some people had difficulties finding it there.
+- Added filters: simple_history_show_settings_page, simple_history_show_on_dashboard, simple_history_show_as_page
+
+= 0.6 =
+- Changed widget name to just "History" instead of "Simple History". Keep it simple. Previous name implied there also was an "Advanced History" somewhere.
+- Made the widget look a bit WordPress-ish by borrwing some of the looks from the comments widget.
+- Fix for database that didn't use UTF-8 (sorry international users!)
+- Some security fixes
+- Updated POT-file
+
+= 0.5 =
+- Added author to RSS
+- Added german translation, thanks http://www.fuerther-freiheit.info/
+- Added swedish translation, thanks http://jockegustin.se
+- Better support for translation
+
+= 0.4 =
+- Added: Now you can search the history
+- Added: Choose if you wan't to load/show more than just 5 rows from the history
+
+= 0.3.11 =
+- Fixed: titles are now escaped
+
+= 0.3.10 =
+- Added chinese translation
+- Fixed a variable notice
+- More visible ok-message after setting a new RSS secret
+
+= 0.3.9 =
+- Attachment names were urlencoded and looked wierd. Now they're not.
+- Started to store plugin version number
+
+= 0.3.8 =
+- Added chinese translation
+- Uses WordPress own human_time_diff() instead of own version
+- Fix for time zones
 
 = 0.3.7 =
 - Directly after installation of Simple History you could view the history RSS feed without using any secret. Now a secret is automatically set during installation.
