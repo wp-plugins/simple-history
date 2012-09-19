@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 0.8.1
+Version: 1.0
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "0.8.1");
+define( "SIMPLE_HISTORY_VERSION", "1.0");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -36,7 +36,10 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
  */ 
  class simple_history {
 	 
-	 var $plugin_foldername_and_filename;
+	 var
+	 	$plugin_foldername_and_filename;
+
+	 static $pager_size = 5;
 
 	 function __construct() {
 	 
@@ -327,7 +330,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		$user = $_POST["user"];
 		if ($user == __( "By all users", 'simple-history' )) { $user = "";	}
 	
-		// the page we are at. deprecated because I kinda did it all wrong :/
+		// page to show. 1 = first page.
 		$page = 0;
 		if (isset($_POST["page"])) {
 			$page = (int) $_POST["page"];
@@ -350,7 +353,33 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			"num_added" => $num_added,
 			"search" => $search 
 		);
+		
+		$arr_json = array(
+			"status" => "ok",
+			"error"	=> "",
+			"items_li" => "",
+			"filtered_items_total_count" => 0,
+			"filtered_items_total_pages" => 0
+		);
+		
+		ob_start();
 		simple_history_print_history($args);
+		$return = ob_get_clean();
+		if ("noMoreItems" == $return) {
+			$arr_json["status"] = "error";
+			$arr_json["error"] = "noMoreItems";
+		} else {
+			$arr_json["items_li"] = $return;
+			// total number of event. really bad way since we get them all again. need to fix this :/
+			$args["items"] = "all";
+			$all_items = simple_history_get_items_array($args);
+			$arr_json["filtered_items_total_count"] = sizeof($all_items);
+			$arr_json["filtered_items_total_pages"] = ceil($arr_json["filtered_items_total_count"] / simple_history::$pager_size);
+		}
+		
+		header("text/json");
+		echo json_encode($arr_json);
+		
 		exit;
 	
 	}
@@ -360,12 +389,6 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 // Boot up
 $simple_history = new simple_history;
 
-
-function simple_history_dashboard() {
-	simple_history_purge_db();
-	simple_history_print_nav();
-	simple_history_print_history();
-}
 
 function simple_history_settings_page() {
 	// never remove this function, it must exist.	
@@ -785,6 +808,15 @@ function simple_history_purge_db() {
 	$wpdb->query($sql);
 }
 
+// widget on dashboard
+function simple_history_dashboard() {
+	simple_history_purge_db();
+	simple_history_print_nav();
+	simple_history_print_history();
+	echo simple_history_get_pagination();
+}
+
+// own page under dashboard
 function simple_history_management_page() {
 
 	simple_history_purge_db();
@@ -796,6 +828,7 @@ function simple_history_management_page() {
 		<?php	
 		simple_history_print_nav(array("from_page=1"));
 		simple_history_print_history(array("items" => 5, "from_page" => "1"));
+		echo simple_history_get_pagination();
 		?>
 	</div>
 
@@ -977,23 +1010,62 @@ function simple_history_print_nav() {
 	</p>";
 	echo $search;
 
+	// echo simple_history_get_pagination();
+	
+}
 
+function simple_history_get_pagination() {
+
+	// pagination
+	$all_items = simple_history_get_items_array("items=all");
+	$items_count = sizeof($all_items);
+	$pages_count = ceil($items_count/simple_history::$pager_size);
+	$page_current = 1;
+
+	$out = sprintf('
+		<div class="tablenav simple-history-tablenav">
+			<div class="tablenav-pages">
+				<span class="displaying-num">%1$s</span>
+				<span class="pagination-links">
+					<a class="first-page disabled" title="%5$s" href="#">«</a>
+					<a class="prev-page disabled" title="%6$s" href="#">‹</a>
+					<span class="paging-input"><input class="current-page" title="%7$s" type="text" name="paged" value="%2$d" size="2"> %8$s <span class="total-pages">%3$d</span></span>
+					<a class="next-page %4$s" title="%9$s" href="#">›</a>
+					<a class="last-page %4$s" title="%10$s" href="#">»</a>
+				</span>
+			</div>
+		</div>
+		',
+		sprintf('<span>%1$d</span> items', $items_count),
+		$page_current,
+		$pages_count,
+		($pages_count == 1) ? "disabled" : "",
+		__("Go to the first page"), // 5
+		__("Go to the previous page"), // 6
+		__("Current page"), // 7
+		__("of"), // 8
+		__("Go to the next page"), // 9
+		__("Go to the last page") // 10
+	);
+
+	return $out;
+	
 }
 
 
 // return an array with all events and occasions
-function simple_history_get_items_array($args) {
+function simple_history_get_items_array($args = "") {
 
 	global $wpdb;
 	
 	$defaults = array(
-		"page" => 0,
-		"items" => 5,
+		"page"        => 0,
+		"items"       => 5,
 		"filter_type" => "",
 		"filter_user" => "",
-		"is_ajax" => false,
-		"search" => "",
-		"num_added" => 0
+		"is_ajax"     => false,
+		"search"      => "",
+		"num_added"   => 0
 	);
 	$args = wp_parse_args( $args, $defaults );
 
@@ -1072,6 +1144,8 @@ function simple_history_get_items_array($args) {
 						$do_add = TRUE;
 					} else if (strpos(strtolower($one_row->object_subtype), $search) !== FALSE) {
 						$do_add = TRUE;
+					} else if (strpos(strtolower($one_row->action), $search) !== FALSE) {
+						$do_add = TRUE;
 					}
 		        } else {
 			        $do_add = TRUE;
@@ -1103,7 +1177,14 @@ function simple_history_get_items_array($args) {
 	sf_d($args["items"]);
 	sf_d($arr_events);
 	// */
-	$arr_events = array_splice($arr_events, $args["num_added"], $args["items"]);
+	// 
+	//$offset = $args["num_added"]; // old way when we appended
+	if (is_numeric($args["items"]) && $args["items"] > 0) {
+		#sf_d($args);
+		$offset = ($args["page"] * $args["items"]);
+		#echo "offset: $offset";
+		$arr_events = array_splice($arr_events, $offset, $args["items"]);
+	}
 	
 	return $arr_events;
 	
@@ -1412,7 +1493,7 @@ function simple_history_print_history($args = null) {
 		
 		// if $loopNum == 0 no items where found for this page
 		if ($loopNum == 0) {
-			echo "simpleHistoryNoMoreItems";
+			echo "noMoreItems";
 		}
 		
 		if (!$args["is_ajax"]) {
@@ -1427,15 +1508,18 @@ function simple_history_print_history($args = null) {
 
 			$loading = __("Loading...", 'simple-history');
 			$loading =  "<img src='".site_url("wp-admin/images/loading.gif")."' width=16 height=16>" . $loading;
-			$no_more_found = __("No more history items found.", 'simple-history');
+			$no_found = __("No matchin items found.", 'simple-history');
 			$view_rss = __("RSS feed", 'simple-history');
 			$view_rss_link = simple_history_get_rss_address();
 			$str_show = __("Show", 'simple-history');
 			echo "</ol>
 			</div>
+			<!--
 			<p class='simple-history-load-more'>$show_more<input type='button' value='$str_show' class='button' /></p>
 			<p class='hidden simple-history-load-more-loading'>$loading</p>
-			<p class='hidden simple-history-no-more-items'>$no_more_found</p>
+			-->
+			<p class='hidden simple-history-no-more-items'>$no_found</p>
+			
 			<p class='simple-history-rss-feed-dashboard'><a title='$view_rss' href='$view_rss_link'>$view_rss</a></p>
 			<p class='simple-history-rss-feed-page'><a title='$view_rss' href='$view_rss_link'><span></span>$view_rss</a></p>
 			";
@@ -1444,7 +1528,7 @@ function simple_history_print_history($args = null) {
 	} else {
 
 		if ($args["is_ajax"]) {
-			echo "simpleHistoryNoMoreItems";
+			echo "noMoreItems";
 		} else {
 			$no_found = __("No history items found.", 'simple-history');
 			$please_note = __("Please note that Simple History only records things that happen after this plugin have been installed.", 'simple-history');

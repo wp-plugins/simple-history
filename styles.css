@@ -17,9 +17,12 @@
 
 ol.simple-history {
 	list-style-type: none;
-	margin: 0 -10px;
 	padding: 0;
+	margin: 0;
 	border-top: 1px solid #DFDFDF;
+}
+#simple_history_dashboard_widget ol.simple-history {
+	margin: 0 -10px;
 }
 ol.simple-history a {
 	text-decoration: none;
@@ -33,6 +36,7 @@ ol.simple-history > li {
 	border-bottom: 1px solid #DFDFDF;
 	background-color: #FCFCFC;
 	min-height: 32px;
+	/* min-height: 50px; */
 	padding-left: 52px;
 }
 ol.simple-history > li:nth-child(odd) {
@@ -169,10 +173,15 @@ ul.simple-history-occasions li {
 #simple_history_dashboard_widget .simple-history-rss-feed-page {
 	display: none;
 }
+
+.dashboard_page_simple_history_page .wrap {
+	position: relative;
+}
 .simple-history-rss-feed-page {
 	display: block;
-	padding-top: 10px;
-	border-top: 1px solid #ccc;
+	position: absolute;
+	right: 0;
+	bottom: -3px;
 }
 .simple-history-rss-feed-page span {
 	float: left;
@@ -189,4 +198,8 @@ ul.simple-history-occasions li {
 }
 .simple-history-filter-search input[type=button] {
 	cursor: pointer;
+}
+
+.simple-history-tablenav .tablenav-pages {
+	float: none;
 }
