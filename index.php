@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.0
+Version: 1.0.2
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.0");
+define( "SIMPLE_HISTORY_VERSION", "1.0.2");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -37,20 +37,23 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
  class simple_history {
 	 
 	 var
-	 	$plugin_foldername_and_filename;
+	 	$plugin_foldername_and_filename,
+	 	$view_history_capability;
 
 	 static $pager_size = 5;
 
 	 function __construct() {
 	 
-		add_action( 'admin_init', 					array($this, 'admin_init') ); // start listening to changes
-		add_action( 'init', 						array($this, 'init') ); // start listening to changes
+		add_action( 'admin_init', 					array($this, 'admin_init') );
+		add_action( 'init', 						array($this, 'init') );
 		add_action( 'admin_menu', 					array($this, 'admin_menu') );
 		add_action( 'wp_dashboard_setup', 			array($this, 'wp_dashboard_setup') );
 		add_action( 'wp_ajax_simple_history_ajax',  array($this, 'ajax') );
 		add_filter( 'plugin_action_links_simple-history/index.php', array($this, "plugin_action_links"), 10, 4);
 
 		$this->plugin_foldername_and_filename = basename(dirname(__FILE__)) . "/" . basename(__FILE__);
+		$this->view_history_capability = "edit_pages";
+		$this->view_history_capability = apply_filters("simple_history_view_history_capability", $this->view_history_capability);
 		
 	}
 
@@ -63,7 +66,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 	function wp_dashboard_setup() {
 		if (simple_history_setting_show_on_dashboard()) {
-			if (current_user_can("edit_pages")) {
+			if (current_user_can($this->view_history_capability)) {
 				wp_add_dashboard_widget("simple_history_dashboard_widget", __("History", 'simple-history'), "simple_history_dashboard");
 			}
 		}
@@ -72,7 +75,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 	// stuff that happens in the admin
 	// "admin_init is triggered before any other hook when a user access the admin area"
 	function admin_init() {
-										 									 
+
 		// posts						 
 		add_action("save_post", "simple_history_save_post");
 		add_action("transition_post_status", "simple_history_transition_post_status", 10, 3);
@@ -109,10 +112,17 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		// check if database needs upgrade
 		$this->check_upgrade_stuff();
 
+		// add scripts and styles
+		add_action("admin_enqueue_scripts", array($this, "admin_enqueue"));
 										 
-		wp_enqueue_style( "simple_history_styles", SIMPLE_HISTORY_URL . "styles.css", false, SIMPLE_HISTORY_VERSION );	
-		wp_enqueue_script("simple_history", SIMPLE_HISTORY_URL . "scripts.js", array("jquery"), SIMPLE_HISTORY_VERSION);
-										 
+	}
+
+	// enqueue styles and scripts, but only to our own pages
+	function admin_enqueue($hook) {
+		if ( ($hook == "settings_page_simple_history_settings_menu_slug") || (simple_history_setting_show_on_dashboard() && $hook == "index.php") || (simple_history_setting_show_as_page() && $hook == "dashboard_page_simple_history_page")) {
+			wp_enqueue_style( "simple_history_styles", SIMPLE_HISTORY_URL . "styles.css", false, SIMPLE_HISTORY_VERSION );	
+			wp_enqueue_script("simple_history", SIMPLE_HISTORY_URL . "scripts.js", array("jquery"), SIMPLE_HISTORY_VERSION);
+		}
 	}
 
 	// WordPress Core updated
@@ -205,14 +215,14 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 	
 		// show as page?
 		if (simple_history_setting_show_as_page()) {
-			add_dashboard_page(SIMPLE_HISTORY_NAME, __("History", 'simple-history'), "edit_pages", "simple_history_page", "simple_history_management_page");
+			add_dashboard_page(SIMPLE_HISTORY_NAME, __("History", 'simple-history'), $this->view_history_capability, "simple_history_page", "simple_history_management_page");
 		}
 
 		// add page for settings
 		$show_settings_page = TRUE;
 		$show_settings_page = apply_filters("simple_history_show_settings_page", $show_settings_page);
 		if ($show_settings_page) {
-			add_options_page(__('Simple History Settings', "simple-history"), SIMPLE_HISTORY_NAME, 'edit_pages', "simple_history_settings_menu_slug", array($this, 'settings_page'));
+			add_options_page(__('Simple History Settings', "simple-history"), SIMPLE_HISTORY_NAME, $this->view_history_capability, "simple_history_settings_menu_slug", array($this, 'settings_page'));
 		}
 
 		add_settings_section("simple_history_settings_section", __("", "simple-history"), "simple_history_settings_page", "simple_history_settings_menu_slug");
@@ -362,9 +372,9 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			"filtered_items_total_pages" => 0
 		);
 		
-		ob_start();
-		simple_history_print_history($args);
-		$return = ob_get_clean();
+		// ob_start();
+		$return = simple_history_print_history($args);
+		// $return = ob_get_clean();
 		if ("noMoreItems" == $return) {
 			$arr_json["status"] = "error";
 			$arr_json["error"] = "noMoreItems";
@@ -377,7 +387,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			$arr_json["filtered_items_total_pages"] = ceil($arr_json["filtered_items_total_count"] / simple_history::$pager_size);
 		}
 		
-		header("text/json");
+		header("Content-type: application/json");
 		echo json_encode($arr_json);
 		
 		exit;
@@ -580,7 +590,6 @@ function simple_history_update_option($option, $oldval, $newval) {
 		$diff_removed = array_diff((array) $oldval, (array) $newval);
 		$debug .= "\ndiff_added: " . print_r($diff_added, true);
 		$debug .= "\ndiff_removed: " . print_r($diff_removed, true);
-		#b_fd($debug);
 	}
 }
 
@@ -596,13 +605,6 @@ function simple_history_updated_option($option, $oldval, $newval) {
 
 }
 
-// debug to file
-// short for "bonny_file_debug" :)
-function b_fd($str) {
-	$file = "/Users/bonny/Dropbox/localhost/wordpress3/wp-content/plugins/simple-history/debug.txt";
-	#$f = fopen($file, "+a");
-	file_put_contents($file, $str, FILE_APPEND);
-}
 
 /*
 function simple_history_updated_option2($option, $oldval) {
@@ -812,7 +814,7 @@ function simple_history_purge_db() {
 function simple_history_dashboard() {
 	simple_history_purge_db();
 	simple_history_print_nav();
-	simple_history_print_history();
+	echo simple_history_print_history();
 	echo simple_history_get_pagination();
 }
 
@@ -827,7 +829,7 @@ function simple_history_management_page() {
 		<h2><?php echo __("History", 'simple-history') ?></h2>
 		<?php	
 		simple_history_print_nav(array("from_page=1"));
-		simple_history_print_history(array("items" => 5, "from_page" => "1"));
+		echo simple_history_print_history(array("items" => 5, "from_page" => "1"));
 		echo simple_history_get_pagination();
 		?>
 	</div>
@@ -1190,8 +1192,8 @@ function simple_history_get_items_array($args = "") {
 	
 }
 
-// output the log
-// take filtrering into consideration
+// return the log
+// taking filtrering into consideration
 function simple_history_print_history($args = null) {
 	
 	$arr_events = simple_history_get_items_array($args);
@@ -1205,11 +1207,11 @@ function simple_history_print_history($args = null) {
 	);
 
 	$args = wp_parse_args( $args, $defaults );
-
+	$output = "";
 	if ($arr_events) {
 		if (!$args["is_ajax"]) {
 			// if not ajax, print the div
-			echo "<div class='simple-history-ol-wrapper'><ol class='simple-history'>";
+			$output .= "<div class='simple-history-ol-wrapper'><ol class='simple-history'>";
 		}
 	
 		$loopNum = 0;
@@ -1243,9 +1245,9 @@ function simple_history_print_history($args = null) {
 				$css .= ' simple-history-has-occasions ';
 			}
 			
-			echo "<li class='$css'>";
+			$output .= "<li class='$css'>";
 
-			echo "<div class='first'>";
+			$output .= "<div class='first'>";
 			
 			// who performed the action
 			$who = "";
@@ -1259,7 +1261,7 @@ function simple_history_print_history($args = null) {
 				$user_avatar = get_avatar("", "32"); 
 				$who_avatar = sprintf('<span class="simple-history-who-avatar">%1$s</span>', $user_avatar);
 			}
-			echo $who_avatar;
+			$output .= $who_avatar;
 			
 			// section with info about the user who did something
 			$who .= "<span class='who'>";
@@ -1329,7 +1331,7 @@ function simple_history_print_history($args = null) {
 				//}
 				
 				$post_out = ucfirst($post_out);
-				echo $post_out;
+				$output .= $post_out;
 
 				
 			} elseif ("attachment" == $object_type_lcase) {
@@ -1363,7 +1365,7 @@ function simple_history_print_history($args = null) {
 				$attachment_out .= " $action ";
 				
 				$attachment_out = ucfirst($attachment_out);
-				echo $attachment_out;
+				$output .= $attachment_out;
 
 			} elseif ("user" == $object_type_lcase) {
 				$user_out = "";
@@ -1417,12 +1419,12 @@ function simple_history_print_history($args = null) {
 				//}
 				
 				$user_out = ucfirst($user_out);
-				echo $user_out;
+				$output .= $user_out;
 
 			} elseif ("comment" == $object_type_lcase) {
 				
 				$comment_link = get_edit_comment_link($object_id);
-				echo esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <a href='$comment_link'><span class='simple-history-title'>" . esc_html($object_name) . "\"</span></a> " . esc_html($action);
+				$output .= esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <a href='$comment_link'><span class='simple-history-title'>" . esc_html($object_name) . "\"</span></a> " . esc_html($action);
 
 			} else {
 
@@ -1445,46 +1447,46 @@ function simple_history_print_history($args = null) {
 					default:
 						$unknown_action = $unknown_action; // dah!
 				}
-				echo esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <span class='simple-history-title'>\"" . esc_html($object_name) . "\"</span> " . esc_html($unknown_action);
+				$output .= esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <span class='simple-history-title'>\"" . esc_html($object_name) . "\"</span> " . esc_html($unknown_action);
 
 			}
-			echo "</div>";
+			$output .= "</div>";
 			
-			echo "<div class='second'>";
+			$output .= "<div class='second'>";
 			// when
 			$date_i18n_date = date_i18n(get_option('date_format'), strtotime($one_row->date), $gmt=false);
 			$date_i18n_time = date_i18n(get_option('time_format'), strtotime($one_row->date), $gmt=false);		
 			$now = strtotime(current_time("mysql"));
-			$diff_str = sprintf( __('<span class="when">%1$s ago</span> by %2$s'), human_time_diff(strtotime($one_row->date), $now), $who );
-			echo $diff_str;
-			echo "<span class='when_detail'>".sprintf(__('%s at %s', 'simple-history'), $date_i18n_date, $date_i18n_time)."</span>";
-			echo "</div>";
+			$diff_str = sprintf( __('<span class="when">%1$s ago</span> by %2$s', "simple-history"), human_time_diff(strtotime($one_row->date), $now), $who );
+			$output .= $diff_str;
+			$output .= "<span class='when_detail'>".sprintf(__('%s at %s', 'simple-history'), $date_i18n_date, $date_i18n_time)."</span>";
+			$output .= "</div>";
 
 			// occasions
 			if ($num_occasions > 0) {
-				echo "<div class='third'>";
+				$output .= "<div class='third'>";
 				if ($num_occasions == 1) {
 					$one_occasion = __("+ 1 occasion", 'simple-history');
-					echo "<a class='simple-history-occasion-show' href='#'>$one_occasion</a>";
+					$output .= "<a class='simple-history-occasion-show' href='#'>$one_occasion</a>";
 				} else {
 					$many_occasion = sprintf(__("+ %d occasions", 'simple-history'), $num_occasions);
-					echo "<a class='simple-history-occasion-show' href='#'>$many_occasion</a>";
+					$output .= "<a class='simple-history-occasion-show' href='#'>$many_occasion</a>";
 				}
-				echo "<ul class='simple-history-occasions hidden'>";
+				$output .= "<ul class='simple-history-occasions hidden'>";
 				foreach ($occasions as $one_occasion) {
-					echo "<li>";
+					$output .= "<li>";
 					$date_i18n_date = date_i18n(get_option('date_format'), strtotime($one_occasion->date), $gmt=false);
 					$date_i18n_time = date_i18n(get_option('time_format'), strtotime($one_occasion->date), $gmt=false);		
-					echo sprintf( __('%s ago (%s at %s)', "simple-history"), human_time_diff(strtotime($one_occasion->date), $now), $date_i18n_date, $date_i18n_time );
+					$output .= sprintf( __('%s ago (%s at %s)', "simple-history"), human_time_diff(strtotime($one_occasion->date), $now), $date_i18n_date, $date_i18n_time );
 
-					echo "</li>";
+					$output .= "</li>";
 				}
-				echo "</ul>";
-				echo "</div>";
+				$output .= "</ul>";
+				$output .= "</div>";
 			}
 			
 
-			echo "</li>";
+			$output .= "</li>";
 
 			$loopNum++;
 
@@ -1493,7 +1495,7 @@ function simple_history_print_history($args = null) {
 		
 		// if $loopNum == 0 no items where found for this page
 		if ($loopNum == 0) {
-			echo "noMoreItems";
+			$output .= "noMoreItems";
 		}
 		
 		if (!$args["is_ajax"]) {
@@ -1512,7 +1514,7 @@ function simple_history_print_history($args = null) {
 			$view_rss = __("RSS feed", 'simple-history');
 			$view_rss_link = simple_history_get_rss_address();
 			$str_show = __("Show", 'simple-history');
-			echo "</ol>
+			$output .= "</ol>
 			</div>
 			<!--
 			<p class='simple-history-load-more'>$show_more<input type='button' value='$str_show' class='button' /></p>
@@ -1528,15 +1530,16 @@ function simple_history_print_history($args = null) {
 	} else {
 
 		if ($args["is_ajax"]) {
-			echo "noMoreItems";
+			$output .= "noMoreItems";
 		} else {
 			$no_found = __("No history items found.", 'simple-history');
 			$please_note = __("Please note that Simple History only records things that happen after this plugin have been installed.", 'simple-history');
-			echo "<p>$no_found</p>";
-			echo "<p>$please_note</p>";
+			$output .= "<p>$no_found</p>";
+			$output .= "<p>$please_note</p>";
 		}
 
 	}
+	return $output;
 }
 
 // called when saving an options page

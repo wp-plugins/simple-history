@@ -24,8 +24,7 @@ jQuery(document).on("keyup", ".simple-history-filter-search input[type='text'], 
 // begin at position 0 unless click on pagination then check pagination page
 jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .simple-history-tablenav a").live("click", function(e, extraParams) {
 
-	var 
-		$t = jQuery(this),
+	var $t = jQuery(this),
 		$ol = jQuery("ol.simple-history"),
 		$wrapper = jQuery(".simple-history-ol-wrapper"),
 		num_added = $ol.find("> li").length,
@@ -96,8 +95,7 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 		"page": simple_history_current_page
 	};
 	jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
-		data = jQuery.parseJSON(data);
-
+		
 		if (data.error == "noMoreItems") {
 			// jQuery(".simple-history-load-more,.simple-history-load-more-loading").hide();
 			jQuery(".simple-history-no-more-items").show();
@@ -121,6 +119,7 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 				height: $ol.height()
 			}, "fast", "swing", function() {
 				$ol.fadeIn("fast");
+				jQuery(".simple-history-ol-wrapper").height("auto");
 			});
 
 		}

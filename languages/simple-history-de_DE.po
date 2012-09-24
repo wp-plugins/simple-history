@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Simple History 0.4\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/simple-history\n"
-"POT-Creation-Date: 2010-09-19 18:24+0000\n"
-"PO-Revision-Date: 2012-02-22 14:15+0100\n"
+"POT-Creation-Date: 2012-09-23 11:21:09+00:00\n"
+"PO-Revision-Date: 2012-09-24 11:46+0100\n"
 "Last-Translator: Ralph Stenzel <ralph@klein-aber-fein.de>\n"
 "Language-Team: Ralph Stenzel <ralph@klein-aber-fein.de>\n"
 "MIME-Version: 1.0\n"
@@ -18,129 +18,360 @@ msgstr ""
 "X-Poedit-Country: GERMANY\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: index.php:126
-#: index.php:168
-#, php-format
-msgid "Simple History for %s"
-msgstr "Simple History für %s"
+#: index.php:67
+#: index.php:208
+#: index.php:827
+msgid "History"
+msgstr "Historie"
 
-#: index.php:127
-#: index.php:169
-#, php-format
-msgid "WordPress History for %s"
-msgstr "WordPress History für %s"
-
-#: index.php:139
-#, php-format
-msgid "By %s"
-msgstr "Von %s"
-
-#: index.php:143
-#, php-format
-msgid "%d occasions"
-msgstr "%d Fälle"
-
-#: index.php:173
-msgid "Wrong RSS secret"
-msgstr "Falsche RSS-Geheimadresse"
-
-#: index.php:174
-msgid "Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed."
-msgstr "Ihre RSS-Geheimadresse für den Simple History RSS-Feed ist falsch. Bitte überprüfen Sie die WordPress-Einstellungen hinsichtlich des momentanen Links zum RSS-Feed."
-
-#: index.php:247
-msgid "on the dashboard"
-msgstr "auf dem Armaturenbrett (Dashboard)"
-
-#: index.php:252
-msgid "as a page under the tools menu"
-msgstr "als eine Seite im Werkzeuge-Menü"
-
-#: index.php:283
-msgid "Created new secret RSS adress"
-msgstr "Neue geheime RSS-Adresse erstellt"
-
-#: index.php:294
-msgid "This is a secret RSS feed for Simple History. Only share the link with people you trust"
-msgstr "Dies ist ein vertraulicher RSS-Feed für Simple History. Teilen Sie das Link nur mit Leuten Ihres Vertrauens!"
-
-#: index.php:297
-#, php-format
-msgid "You can <a href='%s'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands."
-msgstr "Sie können für den RSS-Feed <a href='%s'>eine neue Adresse erstellen</a> lassen. Dies ist hilfreich wenn Sie den Verdacht haben, daß die bisherige Adresse in falsche Hände gekommen sein könnte."
-
-#: index.php:320
-#: index.php:335
-#: index.php:366
-#, php-format
-msgid "From %1$s on %2$s"
-msgstr "Von %1$s am %2$s"
-
-#: index.php:811
-msgid "By all users"
-msgstr "Von allen Benutzern"
-
-#: index.php:1031
-msgid "Unknown or deleted user"
-msgstr "Unbekannter oder gelöschter Benutzer"
-
-#: index.php:1058
-msgid "created"
-msgstr "erzeugt"
-
-#: index.php:1060
-#: index.php:1153
+#: index.php:120
+#: index.php:630
+#: index.php:642
+#: index.php:730
 msgid "updated"
 msgstr "aktualisiert"
 
-#: index.php:1062
-#: index.php:1155
+#: index.php:120
+msgid "WordPress Core"
+msgstr "WordPress-Kern"
+
+#: index.php:120
+msgid "WordPress %1$s"
+msgstr "WordPress %1$s"
+
+#: index.php:133
+#: index.php:222
+msgid "Donate"
+msgstr "Spenden Sie"
+
+#: index.php:178
+msgid "upgraded it's database"
+msgstr "hat seine Datenbank aktualisiert"
+
+#: index.php:178
+#: index.php:494
+#: index.php:498
+#: index.php:887
+msgid "Plugin"
+msgstr "Plugin"
+
+#: index.php:194
+#: index.php:215
+msgid "Simple History Settings"
+msgstr "Simple History Einstellungen"
+
+#: index.php:220
+msgid "Show Simple History"
+msgstr "Zeige Simple History"
+
+#: index.php:221
+#: index.php:1512
+msgid "RSS feed"
+msgstr "RSS-Feed"
+
+#: index.php:262
+#: index.php:305
+msgid "History for %s"
+msgstr "Historie für %s"
+
+#: index.php:263
+#: index.php:306
+msgid "WordPress History for %s"
+msgstr "WordPress Historie für %s"
+
+#: index.php:275
+msgid "By %s"
+msgstr "Von %s"
+
+#: index.php:279
+msgid "%d occasions"
+msgstr "%d Fälle"
+
+#: index.php:310
+msgid "Wrong RSS secret"
+msgstr "Falsche RSS-Geheimadresse"
+
+#: index.php:311
+msgid "Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed."
+msgstr "Ihre RSS-Geheimadresse für den Simple History RSS-Feed ist falsch. Bitte überprüfen Sie die WordPress-Einstellungen hinsichtlich des momentanen Links zum RSS-Feed."
+
+#: index.php:328
+#: index.php:921
+msgid "All types"
+msgstr "Alle Arten"
+
+#: index.php:331
+#: index.php:987
+msgid "By all users"
+msgstr "Von allen Benutzern"
+
+#: index.php:417
+msgid "on the dashboard"
+msgstr "auf dem Armaturenbrett (Dashboard)"
+
+#: index.php:422
+msgid "as a page under the dashboard menu"
+msgstr "als eine Seite unter dem Dashboard-Menü"
+
+#: index.php:431
+msgid ""
+"\n"
+"\t\t\tPlease\n"
+"\t\t\t<a href=\"http://eskapism.se/sida/donate/?utm_source=wordpress&utm_medium=settingpage&utm_campaign=simplehistory\">\n"
+"\t\t\tdonate\n"
+"\t\t\t</a> to support the development of this plugin and to keep it free.\n"
+"\t\t\tThanks!\n"
+"\t\t\t"
+msgstr ""
+"\n"
+"\t\t\tBitte\n"
+"\t\t\t<a href=\"http://eskapism.se/sida/donate/?utm_source=wordpress&utm_medium=settingpage&utm_campaign=simplehistory\">\n"
+"\t\t\tspenden Sie,\n"
+"\t\t\t</a> um die Weiterentwicklung dieses kostenlosen Plugins zu unterstützen.\n"
+"\t\t\tDanke!\n"
+"\t\t\t"
+
+#: index.php:473
+msgid "Created new secret RSS adress"
+msgstr "Neue geheime RSS-Adresse erstellt"
+
+#: index.php:484
+msgid "This is a secret RSS feed for Simple History. Only share the link with people you trust"
+msgstr "Dies ist ein vertraulicher RSS-Feed für Simple History. Teilen Sie das Link nur mit Leuten Ihres Vertrauens!"
+
+#: index.php:487
+msgid "You can <a href='%s#simple-history-settings-page'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands."
+msgstr "Sie können für den RSS-Feed <a href='%s'>eine neue Adresse erstellen</a> lassen. Dies ist hilfreich wenn Sie den Verdacht haben, daß die bisherige Adresse in falsche Hände gekommen sein könnte."
+
+#: index.php:494
+#: index.php:887
+#: index.php:1434
+msgid "activated"
+msgstr "aktiviert"
+
+#: index.php:498
+#: index.php:1437
+msgid "deactivated"
+msgstr "deaktiviert"
+
+#: index.php:510
+#: index.php:526
+#: index.php:558
+msgid "From %1$s on %2$s"
+msgstr "Von %1$s am %2$s"
+
+#: index.php:513
+msgid "edited"
+msgstr "geändert"
+
+#: index.php:513
+#: index.php:529
+#: index.php:561
+msgid "Comment"
+msgstr "Kommentar"
+
+#: index.php:529
+#: index.php:635
+#: index.php:656
+#: index.php:685
+#: index.php:727
 msgid "deleted"
 msgstr "gelöscht"
 
-#: index.php:1151
+#: index.php:545
+msgid "approved"
+msgstr "genehmigt"
+
+#: index.php:547
+msgid "unapproved"
+msgstr "nicht genehmigt"
+
+#: index.php:549
+msgid "marked as spam"
+msgstr "als Spam gekennzeichnet"
+
+#: index.php:551
+msgid "trashed"
+msgstr "verworfen"
+
+#: index.php:553
+msgid "untrashed"
+msgstr "wiederhergestellt"
+
+#: index.php:623
 msgid "added"
 msgstr "hinzugefügt"
 
-#: index.php:1157
+#: index.php:623
+#: index.php:630
+#: index.php:635
+msgid "Attachment"
+msgstr "Anhang"
+
+#: index.php:642
+#: index.php:656
+#: index.php:670
+#: index.php:677
+msgid "User"
+msgstr "Benutzer"
+
+#: index.php:670
 msgid "logged in"
 msgstr "angemeldet"
 
-#: index.php:1159
+#: index.php:677
 msgid "logged out"
 msgstr "abgemeldet"
 
-#: index.php:1193
+#: index.php:685
+msgid "Post"
+msgstr "Artikel"
+
+#: index.php:722
+msgid "created"
+msgstr "erzeugt"
+
+#: index.php:1006
+msgid "Search"
+msgstr "Suche"
+
+#: index.php:1043
+msgid "Go to the first page"
+msgstr "Gehe zur ersten Seite"
+
+#: index.php:1044
+msgid "Go to the previous page"
+msgstr "Gehe zur vorherigen Seite"
+
+#: index.php:1045
+msgid "Current page"
+msgstr "Aktuelle Seite"
+
+#: index.php:1046
+msgid "of"
+msgstr "von"
+
+#: index.php:1047
+msgid "Go to the next page"
+msgstr "Gehe zur nächsten Seite"
+
+#: index.php:1048
+msgid "Go to the last page"
+msgstr "Gehe zur letzten Seite"
+
+#: index.php:1280
+msgid "Unknown or deleted user"
+msgstr "Unbekannter oder gelöschter Benutzer"
+
+#: index.php:1338
+msgid "attachment"
+msgstr "Anhang"
+
+#: index.php:1370
+msgid "user"
+msgstr "Benutzer"
+
+#: index.php:1440
+msgid "enabled"
+msgstr "aktiviert"
+
+#: index.php:1443
+msgid "disabled"
+msgstr "deaktiviert"
+
+#: index.php:1458
+msgid "<span class=\"when\">%1$s ago</span> by %2$s"
+msgstr "<span class=\"when\">vor %1$s</span> durch %2$s"
+
+#: index.php:1460
+msgid "%s at %s"
+msgstr "%s bei %s"
+
+#: index.php:1467
 msgid "+ 1 occasion"
 msgstr "+ 1 Fall"
 
-#: index.php:1196
-#, php-format
+#: index.php:1470
 msgid "+ %d occasions"
 msgstr "+ %d Fälle"
 
-#: index.php:1225
-#, php-format
-msgid "Show %d more"
-msgstr "Zeige %d weitere"
+#: index.php:1478
+msgid "%s ago (%s at %s)"
+msgstr "vor %s (%s bei %s)"
 
-#: index.php:1226
+#: index.php:1503
+msgid "Show 5 more"
+msgstr "Zeige 5 weitere"
+
+#: index.php:1504
+msgid "Show 15 more"
+msgstr "Zeige 15 weitere"
+
+#: index.php:1505
+msgid "Show 50 more"
+msgstr "Zeige 50 weitere"
+
+#: index.php:1506
+msgid "Show 100 more"
+msgstr "Zeige 100 weitere"
+
+#: index.php:1509
 msgid "Loading..."
 msgstr "Lade..."
 
-#: index.php:1227
-msgid "No more history items found."
-msgstr "Keine weiteren Vorfälle gefunden."
+#: index.php:1511
+msgid "No matchin items found."
+msgstr "Keine passenden Einträge gefunden."
 
-#: index.php:1228
-msgid "Simple History RSS feed"
-msgstr "Simple History RSS-Feed"
+#: index.php:1514
+msgid "Show"
+msgstr "Zeige"
 
-#: index.php:1244
+#: index.php:1533
 msgid "No history items found."
 msgstr "Keine Vorfälle gefunden."
 
-#: index.php:1245
+#: index.php:1534
 msgid "Please note that Simple History only records things that happen after this plugin have been installed."
 msgstr "Bitte beachten Sie, daß Simple History nur Vorfälle aufzeichnet, die nach der Installation des Plugins passiert sind."
 
+#: index.php:1546
+msgid "General Settings"
+msgstr "Grundeinstellungen"
+
+#: index.php:1547
+msgid "Writing Settings"
+msgstr "Schreib-Einstellungen"
+
+#: index.php:1548
+msgid "Reading Settings"
+msgstr "Lese-Einstellungen"
+
+#: index.php:1549
+msgid "Discussion Settings"
+msgstr "Diskussions-Einstellungen"
+
+#: index.php:1550
+msgid "Media Settings"
+msgstr "Medien-Einstellungen"
+
+#: index.php:1551
+msgid "Privacy Settings"
+msgstr "Privatsphäre-Einstellungen"
+
+#: index.php:1557
+#: index.php:1569
+msgid "modified"
+msgstr "geändert"
+
+#: index.php:1557
+#: index.php:1569
+msgid "Settings page"
+msgstr "Einstellungsseite"
+
+#: index.php:1567
+msgid "Permalink Settings"
+msgstr "Permalink-Einstellungen"
+
+#~ msgid "No more history items found."
+#~ msgstr "Keine weiteren Vorfälle gefunden."
