@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.0.2
+Version: 1.0.3
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.0.2");
+define( "SIMPLE_HISTORY_VERSION", "1.0.3");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -938,9 +938,9 @@ function simple_history_print_nav() {
 		}
 		$link = esc_html(add_query_arg("simple_history_type_to_show", $arg));
 		$str_types .= "<a href='$link'>";
-		$str_types .= esc_html($one_type->object_type);
+		$str_types .= esc_html(__($one_type->object_type));
 		if ($one_type->object_subtype) {
-			$str_types .= "/". esc_html($one_type->object_subtype);
+			$str_types .= "/". esc_html(__($one_type->object_subtype));
 		}
 		$str_types .= "</a> | ";
 		$str_types .= "</li>";
@@ -1038,7 +1038,7 @@ function simple_history_get_pagination() {
 			</div>
 		</div>
 		',
-		sprintf('<span>%1$d</span> items', $items_count),
+		sprintf( __('<span>%1$d</span> items', "simple-history"), $items_count),
 		$page_current,
 		$pages_count,
 		($pages_count == 1) ? "disabled" : "",
