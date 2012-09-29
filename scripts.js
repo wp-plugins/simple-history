@@ -24,8 +24,7 @@ jQuery(document).on("keyup", ".simple-history-filter-search input[type='text'], 
 // begin at position 0 unless click on pagination then check pagination page
 jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .simple-history-tablenav a").live("click", function(e, extraParams) {
 
-	var 
-		$t = jQuery(this),
+	var $t = jQuery(this),
 		$ol = jQuery("ol.simple-history"),
 		$wrapper = jQuery(".simple-history-ol-wrapper"),
 		num_added = $ol.find("> li").length,
@@ -38,7 +37,7 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 		$prev_page = $tablenav.find(".prev-page"),
 		$first_page = $tablenav.find(".first-page"),
 		$last_page = $tablenav.find(".last-page"),
-		$displaying_num = $tablenav.find(".displaying-num span");
+		$displaying_num = $tablenav.find(".displaying-num");
 
 	e.preventDefault();
 	
@@ -87,17 +86,20 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 	// update current page
 	$current_page.val(simple_history_current_page+1);
 	
+	var type = jQuery("ul.simple-history-filter-type li.selected").data("simple-history-filter-type");
+	var subtype = jQuery("ul.simple-history-filter-type li.selected").data("simple-history-filter-subtype");
+	
 	var data = {
 		"action": "simple_history_ajax",
-		"type": jQuery("ul.simple-history-filter-type li.selected a").text(),
+		"type": type,
+		"subtype" : subtype,
 		"user": jQuery("ul.simple-history-filter-user li.selected a").text(),
 		"search": search,
 		"num_added": num_added,
 		"page": simple_history_current_page
 	};
 	jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
-		data = jQuery.parseJSON(data);
-
+		
 		if (data.error == "noMoreItems") {
 			// jQuery(".simple-history-load-more,.simple-history-load-more-loading").hide();
 			jQuery(".simple-history-no-more-items").show();
@@ -109,9 +111,9 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 			$tablenav.hide();
 
 		} else {
-		
+
 			// update number of existing items and total pages
-			$displaying_num.html(data.filtered_items_total_count);
+			$displaying_num.html(data.filtered_items_total_count_string);
 			$total_pages.text(data.filtered_items_total_pages);
 		
 			$tablenav.show();
@@ -121,6 +123,7 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 				height: $ol.height()
 			}, "fast", "swing", function() {
 				$ol.fadeIn("fast");
+				jQuery(".simple-history-ol-wrapper").height("auto");
 			});
 
 		}
