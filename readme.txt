@@ -92,6 +92,12 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
+= 1.0.4 =
+- You may want to clear the history database after this update because the items in the log will have mixed translate/untranslated status and it may look/work a bit strange.
+- No longer stored translated history items in the log. This makes the history work even if/when you switch langauge of WordPress.
+- Fixed: if for example a post was editied several times and during these edits it changed name, it would end up at different occasions. Now it's correctly stored as one event with several occasions.
+- Some more items are translateable
+
 = 1.0.3 =
 - Updated German translation
 - Some translation fixes

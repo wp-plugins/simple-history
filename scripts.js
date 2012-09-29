@@ -37,7 +37,7 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 		$prev_page = $tablenav.find(".prev-page"),
 		$first_page = $tablenav.find(".first-page"),
 		$last_page = $tablenav.find(".last-page"),
-		$displaying_num = $tablenav.find(".displaying-num span");
+		$displaying_num = $tablenav.find(".displaying-num");
 
 	e.preventDefault();
 	
@@ -86,9 +86,13 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 	// update current page
 	$current_page.val(simple_history_current_page+1);
 	
+	var type = jQuery("ul.simple-history-filter-type li.selected").data("simple-history-filter-type");
+	var subtype = jQuery("ul.simple-history-filter-type li.selected").data("simple-history-filter-subtype");
+	
 	var data = {
 		"action": "simple_history_ajax",
-		"type": jQuery("ul.simple-history-filter-type li.selected a").text(),
+		"type": type,
+		"subtype" : subtype,
 		"user": jQuery("ul.simple-history-filter-user li.selected a").text(),
 		"search": search,
 		"num_added": num_added,
@@ -107,9 +111,9 @@ jQuery(".simple-history-filter a, .simple-history-filter input[type='button'], .
 			$tablenav.hide();
 
 		} else {
-		
+
 			// update number of existing items and total pages
-			$displaying_num.html(data.filtered_items_total_count);
+			$displaying_num.html(data.filtered_items_total_count_string);
 			$total_pages.text(data.filtered_items_total_pages);
 		
 			$tablenav.show();

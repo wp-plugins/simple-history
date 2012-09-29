@@ -55,6 +55,26 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		$this->view_history_capability = "edit_pages";
 		$this->view_history_capability = apply_filters("simple_history_view_history_capability", $this->view_history_capability);
 		
+		$this->add_types_for_translation();
+	}
+	
+	/**
+	 * Some post types etc are added as variables from the log, so to catch these for translation I just add them as dummy stuff here.
+	 * There is probably a better way to do this, but this should work anyway
+	 */
+	function add_types_for_translation() {
+		$dummy = __("approved", "simple-history");
+		$dummy = __("unapproved", "simple-history");
+		$dummy = __("marked as spam", "simple-history");
+		$dummy = __("trashed", "simple-history");
+		$dummy = __("untrashed", "simple-history");
+		$dummy = __("created", "simple-history");
+		$dummy = __("deleted", "simple-history");
+		$dummy = __("updated", "simple-history");
+		$dummy = __("nav_menu_item", "simple-history");
+		$dummy = __("attachment", "simple-history");
+		$dummy = __("user", "simple-history");
+		$dummy = __("settings page", "simple-history");
 	}
 
 	function plugin_action_links($actions, $b, $c, $d) {
@@ -127,7 +147,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 	// WordPress Core updated
 	function action_core_updated($wp_version) {
-		simple_history_add("action=" . __( 'updated', 'simple-history' ) . "&object_type=" . __('WordPress Core', 'simple-history') . "&object_id=wordpress_core&object_name=".sprintf(__('WordPress %1$s', 'simple-history'), $wp_version));
+		simple_history_add("action=updated&object_type=wordpress_core&object_id=wordpress_core&object_name=".sprintf(__('WordPress %1$s', 'simple-history'), $wp_version));
 	}
 
 	function filter_option_page_capability($capability) {
@@ -185,7 +205,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			$wpdb->query($sql);
 			
 			// Store this upgrade in ourself :)
-			simple_history_add("action=" . __( 'upgraded it\'s database', 'simple-history' ) . "&object_type=" . __('Plugin') . "&object_name=" . SIMPLE_HISTORY_NAME);
+			simple_history_add("action=" . 'upgraded it\'s database' . "&object_type=plugin&object_name=" . SIMPLE_HISTORY_NAME);
 
 			#echo "done upgrading database";
 			
@@ -227,9 +247,10 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 		add_settings_section("simple_history_settings_section", __("", "simple-history"), "simple_history_settings_page", "simple_history_settings_menu_slug");
 
-		add_settings_field("simple_history_settings_field_1", __("Show Simple History", "simple-history"), 	"simple_history_settings_field", 		"simple_history_settings_menu_slug", "simple_history_settings_section");
-		add_settings_field("simple_history_settings_field_2", __("RSS feed", "simple-history"), 			"simple_history_settings_field_rss", 	"simple_history_settings_menu_slug", "simple_history_settings_section");
-		add_settings_field("simple_history_settings_field_3", __("Donate", "simple-history"), 				"simple_history_settings_field_donate",	"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_1", __("Show Simple History", "simple-history"), 	"simple_history_settings_field", 			"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_2", __("RSS feed", "simple-history"), 			"simple_history_settings_field_rss", 		"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_4", __("Clear log", "simple-history"), 			"simple_history_settings_field_clear_log",	"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_3", __("Donate", "simple-history"), 				"simple_history_settings_field_donate",		"simple_history_settings_menu_slug", "simple_history_settings_section");
 
 		register_setting("simple_history_settings_group", "simple_history_show_on_dashboard");
 		register_setting("simple_history_settings_group", "simple_history_show_as_page");
@@ -334,8 +355,8 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 	function ajax() {
 	
-		$type = $_POST["type"];
-		if ($type == __( "All types", 'simple-history' )) { $type = "";	}
+		$type = isset($_POST["type"]) ? $_POST["type"] : "";
+		$subtype = isset($_POST["subtype"]) ? $_POST["subtype"] : "";
 	
 		$user = $_POST["user"];
 		if ($user == __( "By all users", 'simple-history' )) { $user = "";	}
@@ -354,9 +375,11 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 	
 		$search = (isset($_POST["search"])) ? $_POST["search"] : "";
 	
+		$filter_type = $type . "/" . $subtype;
+
 		$args = array(
 			"is_ajax" => true,
-			"filter_type" => $type,
+			"filter_type" => $filter_type,
 			"filter_user" => $user,
 			"page" => $page,
 			"items" => $items,
@@ -369,6 +392,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			"error"	=> "",
 			"items_li" => "",
 			"filtered_items_total_count" => 0,
+			"filtered_items_total_count_string" => "",
 			"filtered_items_total_pages" => 0
 		);
 		
@@ -384,6 +408,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			$args["items"] = "all";
 			$all_items = simple_history_get_items_array($args);
 			$arr_json["filtered_items_total_count"] = sizeof($all_items);
+			$arr_json["filtered_items_total_count_string"] = sprintf(_n('One item', '%1$d items', sizeof($all_items), "simple-history"), sizeof($all_items));
 			$arr_json["filtered_items_total_pages"] = ceil($arr_json["filtered_items_total_count"] / simple_history::$pager_size);
 		}
 		
@@ -434,6 +459,36 @@ function simple_history_settings_field() {
 	<?php
 }
 
+/**
+ * Settings section to clear database
+ */
+function simple_history_settings_field_clear_log() {
+
+	$clear_log = false;
+
+	if (isset($_GET["simple_history_clear_log"]) && $_GET["simple_history_clear_log"]) {
+		$clear_log = true;
+		echo "<div class='simple-history-settings-page-updated'><p>";
+		_e("Cleared database", 'simple-history');
+		echo "</p></div>";
+	}
+	
+	if ($clear_log) {
+		simple_history_clear_log();
+	}
+	
+	_e("Items in the database are automatically removed after 60 days.", 'simple-history');
+	$update_link = add_query_arg("simple_history_clear_log", "1");
+	printf(' <a href="%2$s">%1$s</a>', __('Clear it now.', 'simple-history'), $update_link);
+}
+
+function simple_history_clear_log() {
+	global $wpdb;
+	$tableprefix = $wpdb->prefix;
+	$sql = "DELETE FROM {$tableprefix}simple_history";
+	$wpdb->query($sql);
+}
+
 function simple_history_settings_field_donate() {
 	?>
 	<p>
@@ -471,12 +526,6 @@ function simple_history_settings_field_rss() {
 	?>
 	<?php
 	$create_new_secret = false;
-	/*
-	// eeek! why was this here?
-	if ($rss_secret == false) {
-		$create_new_secret = true;
-	}
-	*/
 	if (isset($_GET["simple_history_rss_update_secret"]) && $_GET["simple_history_rss_update_secret"]) {
 		$create_new_secret = true;
 		echo "<div class='simple-history-settings-page-updated'><p>";
@@ -494,18 +543,18 @@ function simple_history_settings_field_rss() {
 	_e("This is a secret RSS feed for Simple History. Only share the link with people you trust", 'simple-history');
 	echo "<br />";
 	$update_link = add_query_arg("simple_history_rss_update_secret", "1");
-	printf(__("You can <a href='%s#simple-history-settings-page'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands.", 'simple-history'), $update_link);
+	printf(__("You can <a href='%s'>generate a new address</a> for the RSS feed. This is useful if you think that the address has fallen into the wrong hands.", 'simple-history'), $update_link);
 }
 
 // @todo: move all add-related stuff to own file? there are so many of them.. kinda confusing, ey.
 
 function simple_history_activated_plugin($plugin_name) {
 	$plugin_name = urlencode($plugin_name);
-	simple_history_add("action=" . __( 'activated', 'simple-history' ) . "&object_type=" . __('Plugin') . "&object_name=$plugin_name");
+	simple_history_add("action=activated&object_type=plugin&object_name=$plugin_name");
 }
 function simple_history_deactivated_plugin($plugin_name) {
 	$plugin_name = urlencode($plugin_name);
-	simple_history_add("action=" . __( 'deactivated', 'simple-history' ) . "&object_type=" . __('Plugin') . "&object_name=$plugin_name");
+	simple_history_add("action=deactivated&object_type=plugin&object_name=$plugin_name");
 }
 
 function simple_history_edit_comment($comment_id) {
@@ -520,7 +569,7 @@ function simple_history_edit_comment($comment_id) {
 	$str = sprintf( "$excerpt [" . __('From %1$s on %2$s') . "]", $author, $post_title );
 	$str = urlencode($str);
 
-	simple_history_add("action=" . __( 'edited', 'simple-history' ) . "&object_type=" . __('Comment') . "&object_name=$str&object_id=$comment_id");
+	simple_history_add("action=edited&object_type=comment&object_name=$str&object_id=$comment_id");
 
 }
 
@@ -536,7 +585,7 @@ function simple_history_delete_comment($comment_id) {
 	$str = sprintf( "$excerpt [" . __('From %1$s on %2$s') . "]", $author, $post_title );
 	$str = urlencode($str);
 
-	simple_history_add("action=" . __( 'deleted', 'simple-history' ) . "&object_type=" . __('Comment') . "&object_name=$str&object_id=$comment_id");
+	simple_history_add("action=deleted&object_type=comment&object_name=$str&object_id=$comment_id");
 
 }
 
@@ -552,15 +601,15 @@ function simple_history_set_comment_status($comment_id, $new_status) {
 
 	$action = "";
 	if ("approve" == $new_status) {
-		$action = __( 'approved', 'simple-history' );
+		$action = 'approved';
 	} elseif ("hold" == $new_status) {
-		$action = __( 'unapproved', 'simple-history' );
+		$action = 'unapproved';
 	} elseif ("spam" == $new_status) {
-		$action = __( 'marked as spam', 'simple-history' );
+		$action = 'marked as spam';
 	} elseif ("trash" == $new_status) {
-		$action = __( 'trashed', 'simple-history' );
+		$action = 'trashed';
 	} elseif ("0" == $new_status) {
-		$action = __( 'untrashed', 'simple-history' );
+		$action = 'untrashed';
 	}
 
 	$action = urlencode($action);
@@ -568,7 +617,7 @@ function simple_history_set_comment_status($comment_id, $new_status) {
 	$str = sprintf( "$excerpt [" . __('From %1$s on %2$s') . "]", $author, $post_title );
 	$str = urlencode($str);
 
-	simple_history_add("action=$action&object_type=" . __('Comment') . "&object_name=$str&object_id=$comment_id");
+	simple_history_add("action=$action&object_type=comment&object_name=$str&object_id=$comment_id");
 
 }
 
@@ -618,30 +667,29 @@ function simple_history_updated_option3($option) {
 }
 */
 
-
 function simple_history_add_attachment($attachment_id) {
 	$post = get_post($attachment_id);
 	$post_title = urlencode(get_the_title($post->ID));
-	simple_history_add("action=" . __( 'added', 'simple-history' ) . "&object_type=" . __('Attachment', 'simple-history') . "&object_id=$attachment_id&object_name=$post_title");
+	simple_history_add("action=added&object_type=attachment&object_id=$attachment_id&object_name=$post_title");
 
 }
 function simple_history_edit_attachment($attachment_id) {
 	// is this only being called if the title of the attachment is changed?!
 	$post = get_post($attachment_id);
 	$post_title = urlencode(get_the_title($post->ID));
-	simple_history_add("action=" . __( 'updated', 'simple-history' ) . "&object_type=" . __('Attachment', 'simple-history') . "&object_id=$attachment_id&object_name=$post_title");
+	simple_history_add("action=updated&object_type=attachment&object_id=$attachment_id&object_name=$post_title");
 }
 function simple_history_delete_attachment($attachment_id) {
 	$post = get_post($attachment_id);
 	$post_title = urlencode(get_the_title($post->ID));
-	simple_history_add("action=" . __( 'deleted', 'simple-history' ) . "&object_type=" . __('Attachment', 'simple-history') . "&object_id=$attachment_id&object_name=$post_title");
+	simple_history_add("action=deleted&object_type=attachment&object_id=$attachment_id&object_name=$post_title");
 }
 
 // user is updated
 function simple_history_profile_update($user_id) {
 	$user = get_user_by("id", $user_id);
 	$user_nicename = urlencode($user->user_nicename);
-	simple_history_add("action=" . __( 'updated', 'simple-history' ) . "&object_type=" . __('User', 'simple-history') . "&object_id=$user_id&object_name=$user_nicename");
+	simple_history_add("action=updated&object_type=user&object_id=$user_id&object_name=$user_nicename");
 }
 
 // user is created
@@ -655,7 +703,7 @@ function simple_history_user_register($user_id) {
 function simple_history_delete_user($user_id) {
 	$user = get_user_by("id", $user_id);
 	$user_nicename = urlencode($user->user_nicename);
-	simple_history_add("action=" . __( 'deleted', 'simple-history' ) . "&object_type=" . __('User', 'simple-history') . "&object_id=$user_id&object_name=$user_nicename");
+	simple_history_add("action=deleted&object_type=user&object_id=$user_id&object_name=$user_nicename");
 }
 
 // user logs in
@@ -669,14 +717,14 @@ function simple_history_wp_login($user) {
 	} else {
 		$user_id = $current_user->ID;
 	}
-	simple_history_add("action=" . __( 'logged in', 'simple-history' ) . "&object_type=" . __('User', 'simple-history') ."&object_id=".$user->ID."&user_id=$user_id&object_name=$user_nicename");
+	simple_history_add("action=logged in&object_type=user&object_id=".$user->ID."&user_id=$user_id&object_name=$user_nicename");
 }
 // user logs out
 function simple_history_wp_logout() {
 	$current_user = wp_get_current_user();
 	$current_user_id = $current_user->ID;
 	$user_nicename = urlencode($current_user->user_nicename);
-	simple_history_add("action=" . __( 'logged out', 'simple-history' ) . "&object_type=" . __('User', 'simple-history') ."&object_id=$current_user_id&object_name=$user_nicename");
+	simple_history_add("action=logged out&object_type=user&object_id=$current_user_id&object_name=$user_nicename");
 }
 
 function simple_history_delete_post($post_id) {
@@ -684,7 +732,7 @@ function simple_history_delete_post($post_id) {
 		$post = get_post($post_id);
 		if ($post->post_status != "auto-draft" && $post->post_status != "inherit") {
 			$post_title = urlencode(get_the_title($post->ID));
-			simple_history_add("action=" . __( 'deleted', 'simple-history' ) . "&object_type=" . __('Post') ."&object_subtype=" . $post->post_type . "&object_id=$post_id&object_name=$post_title");
+			simple_history_add("action=deleted&object_type=post&object_subtype=" . $post->post_type . "&object_id=$post_id&object_name=$post_title");
 		}
 	}
 }
@@ -721,22 +769,23 @@ function simple_history_transition_post_status($new_status, $old_status, $post) 
 	//bonny_d($post); // regular post object
 	if ($old_status == "auto-draft" && ($new_status != "auto-draft" && $new_status != "inherit")) {
 		// page created
-		$action = __( "created", 'simple-history' );
+		$action = "created";
 	} elseif ($new_status == "auto-draft" || ($old_status == "new" && $new_status == "inherit")) {
 		// page...eh.. just leave it.
 		return;
 	} elseif ($new_status == "trash") {
-		$action = __( "deleted", 'simple-history' );
+		$action = "deleted";
 	} else {
 		// page updated. i guess.
-		$action = __( "updated", 'simple-history' );
+		$action = "updated";
 	}
 	$object_type = "post";
 	$object_subtype = $post->post_type;
 
 	// Attempt to auto-translate post types*/
-	$object_type = __( ucfirst ( $object_type ) );
-	$object_subtype = __( ucfirst ( $object_subtype ) );
+	// no, no longer, do it at presentation instead
+	#$object_type = __( ucfirst ( $object_type ) );
+	#$object_subtype = __( ucfirst ( $object_subtype ) );
 
 	if ($object_subtype == "revision") {
 		// don't log revisions
@@ -886,7 +935,7 @@ function simple_history_install() {
 	
 	#}
 
-	simple_history_add("action=" . __( 'activated', 'simple-history' ) . "&object_type=" . __('Plugin') . "&object_name=$plugin_name");
+	simple_history_add("action=activated&object_type=plugin&object_name=$plugin_name");
 
 	// also generate a rss secret, if it does not exist
 	if (!get_option("simple_history_rss_secret")) {
@@ -910,7 +959,7 @@ function simple_history_print_nav() {
 	}
 	$sql = "SELECT DISTINCT object_type, object_subtype FROM {$tableprefix}simple_history ORDER BY object_type, object_subtype";
 	$arr_types = $wpdb->get_results($sql);
-	#echo "<p>View:</p>";
+
 	$str_types = "";
 	$str_types .= "<ul class='simple-history-filter simple-history-filter-type'>";
 	$css = "";
@@ -918,10 +967,9 @@ function simple_history_print_nav() {
 		$css = "class='selected'";
 	}
 
-	// add_query_arg(
 	$link = esc_html(add_query_arg("simple_history_type_to_show", ""));
 	$str_types_desc = __("All types", 'simple-history');
-	$str_types .= "<li $css><a href='$link'>" . esc_html($str_types_desc) . "</a> | </li>";
+	$str_types .= "<li $css><a data-simple-history-filter-type='' href='$link'>" . esc_html($str_types_desc) . "</a> | </li>";
 	foreach ($arr_types as $one_type) {
 		$css = "";
 		if ($one_type->object_subtype && $simple_history_type_to_show == ($one_type->object_type."/".$one_type->object_subtype)) {
@@ -929,7 +977,7 @@ function simple_history_print_nav() {
 		} elseif (!$one_type->object_subtype && $simple_history_type_to_show == $one_type->object_type) {
 			$css = "class='selected'";
 		}
-		$str_types .= "<li $css>";
+		$str_types .= sprintf('<li %1$s data-simple-history-filter-type="%2$s" data-simple-history-filter-subtype="%3$s" >', $css, $one_type->object_type, $one_type->object_subtype);
 		$arg = "";
 		if ($one_type->object_subtype) {
 			$arg = $one_type->object_type."/".$one_type->object_subtype;
@@ -938,12 +986,35 @@ function simple_history_print_nav() {
 		}
 		$link = esc_html(add_query_arg("simple_history_type_to_show", $arg));
 		$str_types .= "<a href='$link'>";
-		$str_types .= esc_html(__($one_type->object_type));
-		if ($one_type->object_subtype) {
-			$str_types .= "/". esc_html(__($one_type->object_subtype));
+		
+		// Some built in types we translate with built in translation, the others we use simple history for
+		$arr_built_in_types_with_translation = array("page", "post");
+		$object_type_translated = "";
+		$object_subtype_translated = "";
+		if ( in_array($one_type->object_type, $arr_built_in_types_with_translation) ) {
+			$object_type_translated = esc_html__(ucfirst($one_type->object_type));
+		} else {
+			$object_type_translated = esc_html__(ucfirst($one_type->object_type), "simple-history");			
 		}
+		if (in_array($one_type->object_subtype, $arr_built_in_types_with_translation) ) {
+			$object_subtype_translated = esc_html__(ucfirst($one_type->object_subtype));			
+		} else {
+			$object_subtype_translated = esc_html__(ucfirst($one_type->object_subtype), "simple-history");
+		}
+		
+		$str_types .= $object_type_translated;
+		if ($object_subtype_translated && $object_subtype_translated != $object_type_translated) {
+			$str_types .= "/". $object_subtype_translated;
+		}
+		
 		$str_types .= "</a> | ";
 		$str_types .= "</li>";
+		
+		// debug
+		#$str_types .= " type: " . $one_type->object_type;
+		#$str_types .= " type: " . ucfirst($one_type->object_type);
+		#$str_types .= " subtype: " . $one_type->object_subtype. " ";
+		
 	}
 	$str_types .= "</ul>";
 	$str_types = str_replace("| </li></ul>", "</li></ul>", $str_types);
@@ -973,7 +1044,7 @@ function simple_history_print_nav() {
 		}
 	}
 
-	if ($arr_users) {
+	if (isset($arr_users) && $arr_users) {
 		if (isset($_GET["simple_history_user_to_show"])) {
 			$simple_history_user_to_show = $_GET["simple_history_user_to_show"];
 		} else {
@@ -1038,7 +1109,7 @@ function simple_history_get_pagination() {
 			</div>
 		</div>
 		',
-		sprintf( __('<span>%1$d</span> items', "simple-history"), $items_count),
+		sprintf(_n('One item', '%1$d items', sizeof($all_items), "simple-history"), sizeof($all_items)),
 		$page_current,
 		$pages_count,
 		($pages_count == 1) ? "disabled" : "",
@@ -1086,8 +1157,12 @@ function simple_history_get_items_array($args = "") {
 		} else {
 			$filter_type = $simple_history_type_to_show;
 		}
-		$where .= " AND lower(object_type) = '".strtolower($filter_type)."' ";
-		$where .= " AND lower(object_subtype) = '".strtolower($filter_subtype)."' ";
+		if ($filter_type) {
+			$where .= " AND lower(object_type) = '" . $wpdb->escape(strtolower($filter_type)) . "' ";		
+		}
+		if ($filter_subtype) {
+			$where .= " AND lower(object_subtype) = '" . $wpdb->escape(strtolower($filter_subtype)) . "' ";
+		}
 	}
 	if ($simple_history_user_to_show) {
 		
@@ -1102,7 +1177,8 @@ function simple_history_get_items_array($args = "") {
 	$tableprefix = $wpdb->prefix;
 
 	$sql = "SELECT * FROM {$tableprefix}simple_history $where ORDER BY date DESC, id DESC ";
-
+#sf_d($args);
+#echo "\n$sql\n";
 	$rows = $wpdb->get_results($sql);
 	
 	$loopNum = 0;
@@ -1114,6 +1190,11 @@ function simple_history_get_items_array($args = "") {
 	if ($rows) {
 		$prev_row = null;
 		foreach ($rows as $one_row) {
+			
+			// check if this event is same as prev event
+			// todo: how to do with object_name vs object id?
+			// if object_id is same as prev, but object_name differ, then it's the same object but with a new name
+			// we store it as same and use occations to output the name etc of
 			if (
 				$prev_row
 				&& $one_row->action == $prev_row->action
@@ -1121,12 +1202,17 @@ function simple_history_get_items_array($args = "") {
 				&& $one_row->object_type == $prev_row->object_type
 				&& $one_row->object_subtype == $prev_row->object_subtype
 				&& $one_row->user_id == $prev_row->user_id
-				&& $one_row->object_id == $prev_row->object_id
-				&& $one_row->object_name == $prev_row->object_name
+				&& (
+						(!empty($one_row->object_id) && !empty($prev_row->object_id))
+						&& ($one_row->object_id == $prev_row->object_id)
+						|| ($one_row->object_name == $prev_row->object_name)
+				)
 			) {
+				
 				// this event is like the previous event, but only with a different date
 				// so add it to the last element in arr_events
 				$arr_events[$prev_row->id]->occasions[] = $one_row;
+				
 			} else {
 
 				#echo "<br>real_loop_num: $real_loop_num";
@@ -1181,13 +1267,26 @@ function simple_history_get_items_array($args = "") {
 	// */
 	// 
 	//$offset = $args["num_added"]; // old way when we appended
+/*
+<pre class='sf_box_debug'>Array
+(
+    [page] =&gt; 1
+    [items] =&gt; 5
+    [filter_type] =&gt; /
+    [filter_user] =&gt; 
+    [is_ajax] =&gt; 1
+    [search] =&gt; 
+    [num_added] =&gt; 5
+)
+*/
+
 	if (is_numeric($args["items"]) && $args["items"] > 0) {
 		#sf_d($args);
 		$offset = ($args["page"] * $args["items"]);
 		#echo "offset: $offset";
 		$arr_events = array_splice($arr_events, $offset, $args["items"]);
 	}
-	
+
 	return $arr_events;
 	
 }
@@ -1197,7 +1296,7 @@ function simple_history_get_items_array($args = "") {
 function simple_history_print_history($args = null) {
 	
 	$arr_events = simple_history_get_items_array($args);
-
+	#sf_d($args);sf_d($arr_events);
 	$defaults = array(
 		"page" => 0,
 		"items" => 5,
@@ -1282,23 +1381,12 @@ function simple_history_print_history($args = null) {
 				$who .= "&lt;" . __("Unknown or deleted user", 'simple-history') ."&gt;";
 			}
 			$who .= "</span>";
-			// &rarr;
-
-			/*
-				sf_d($one_row);
-			    [object_type] => Post
-			    [object_subtype] => Page
-			    somewhere/somewhow object_type turned from being lowercase to being capitalized
-			    unsure if it's me or wp
-			    ah: after some digging it seems to have with translation to do, we changed to upperase
-			    to support translation.
-		    */
 
 			// what and object
 			if ("post" == $object_type_lcase) {
 				
 				$post_out = "";
-				$post_out .= $object_subtype;
+				$post_out .= esc_html__(ucfirst($object_subtype));
 				$post = get_post($object_id);
 
 				if (null == $post) {
@@ -1318,17 +1406,8 @@ function simple_history_print_history($args = null) {
 					$post_out .= "<span class='simple-history-title'>{$title}</span>";
 					$post_out .= "</a>";
 				}
-				/*
-				if ("created" == $action) {
-					$post_out .= " " . __("created", 'simple-history') . " ";
-				} elseif ("updated" == $action) {
-					$post_out .= " " . __("updated", 'simple-history') . " ";
-				} elseif ("deleted" == $action) {
-					$post_out .= " " . __("deleted", 'simple-history') . " ";
-				} else {
-					*/
-					$post_out .= " " . esc_html($action);
-				//}
+
+				$post_out .= " " . esc_html__($action, "simple-history");
 				
 				$post_out = ucfirst($post_out);
 				$output .= $post_out;
@@ -1362,12 +1441,13 @@ function simple_history_print_history($args = null) {
 					}
 				}
 
-				$attachment_out .= " $action ";
+				$attachment_out .= " " . esc_html__($action, "simple-history") . " ";
 				
 				$attachment_out = ucfirst($attachment_out);
 				$output .= $attachment_out;
 
 			} elseif ("user" == $object_type_lcase) {
+
 				$user_out = "";
 				$user_out .= __("user", 'simple-history');
 				$user = get_user_by("id", $object_id);
@@ -1402,21 +1482,7 @@ function simple_history_print_history($args = null) {
 					$user_out .= "<span class='simple-history-attachment-thumbnail' href='$user_link'>$user_avatar</span>";
 				}
 
-				/*
-				if ("created" == $action) {
-					$user_out .=  " " . __("added", 'simple-history') . " ";
-				} elseif ("updated" == $action) {
-					$user_out .= " " . __("updated", 'simple-history') . " " ;
-				} elseif ("deleted" == $action) {
-					$user_out .= " " . __("deleted", 'simple-history') . " ";
-				} elseif ("logged_in" == $action) {
-					$user_out .= " " . __("logged in", 'simple-history') . " ";
-				} elseif ("logged_out" == $action) {
-					$user_out .= " " . __("logged out", 'simple-history') . " ";
-				} else {
-					*/
-					$user_out .= " " . esc_html($action);
-				//}
+				$user_out .= " " . esc_html__($action, "simple-history");
 				
 				$user_out = ucfirst($user_out);
 				$output .= $user_out;
@@ -1424,7 +1490,7 @@ function simple_history_print_history($args = null) {
 			} elseif ("comment" == $object_type_lcase) {
 				
 				$comment_link = get_edit_comment_link($object_id);
-				$output .= esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <a href='$comment_link'><span class='simple-history-title'>" . esc_html($object_name) . "\"</span></a> " . esc_html($action);
+				$output .= esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <a href='$comment_link'><span class='simple-history-title'>" . esc_html($object_name) . "\"</span></a> " . esc_html__($action, "simple-history");
 
 			} else {
 
@@ -1447,7 +1513,7 @@ function simple_history_print_history($args = null) {
 					default:
 						$unknown_action = $unknown_action; // dah!
 				}
-				$output .= esc_html(ucwords($object_type)) . " " . esc_html($object_subtype) . " <span class='simple-history-title'>\"" . esc_html($object_name) . "\"</span> " . esc_html($unknown_action);
+				$output .= ucwords(esc_html__($object_type, "simple-history")) . " " . ucwords(esc_html__($object_subtype, "simple-history")) . " <span class='simple-history-title'>\"" . esc_html($object_name) . "\"</span> " . esc_html($unknown_action);
 
 			}
 			$output .= "</div>";
@@ -1510,7 +1576,7 @@ function simple_history_print_history($args = null) {
 
 			$loading = __("Loading...", 'simple-history');
 			$loading =  "<img src='".site_url("wp-admin/images/loading.gif")."' width=16 height=16>" . $loading;
-			$no_found = __("No matchin items found.", 'simple-history');
+			$no_found = __("No matching items found.", 'simple-history');
 			$view_rss = __("RSS feed", 'simple-history');
 			$view_rss_link = simple_history_get_rss_address();
 			$str_show = __("Show", 'simple-history');
@@ -1557,7 +1623,7 @@ function simple_history_add_update_option_page($capability = NULL, $option_page 
 	$option_page_name = "";
 	if (isset($arr_options_names[$option_page])) {
 		$option_page_name = $arr_options_names[$option_page];
-		simple_history_add("action=" . __( 'modified', 'simple-history' ) . "&object_type=" . __('Settings page', 'simple-history') . "&object_id=$option_page&object_name=$option_page_name");
+		simple_history_add("action=modified&object_type=settings page&object_id=$option_page&object_name=$option_page_name");
 	}
 
 	return $capability;
@@ -1569,7 +1635,7 @@ function simple_history_add_update_option_page_permalinks($action, $result) {
 	if ("update-permalink" == $action) {
 		$option_page_name = __("Permalink Settings");
 		$option_page = "permalink";
-		simple_history_add("action=" . __( 'modified', 'simple-history' ) . "&object_type=" . __('Settings page', 'simple-history') . "&object_id=$option_page&object_name=$option_page_name");
+		simple_history_add("action=modified&object_type=settings page&object_id=$option_page&object_name=$option_page_name");
 	}
 
 }
