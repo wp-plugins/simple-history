@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 1.0
+Stable tag: 1.0.5
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -12,9 +12,11 @@ View changes made by users within WordPress. See who created a page, uploaded an
 
 Simple History shows recent changes made within WordPress, directly on your dashboard or on a separate page.
 
-The plugin works as a log/history/audit log/version history of all (most, anyway) events that occur in WordPress. For example:
+The plugin works as a log/history/audit log/version history of the most important events that occur in WordPress.
 
-* see what articles have been created, modified or deleted
+For example:
+
+* see what posts and pages that have been created, modified or deleted
 * see what attachments have been uploaded, modified or deleted
 * see what plugins that have been activated or deactivated
 * search through the history/log to find the change/post/article you are looking for
@@ -43,11 +45,15 @@ See the plugin in action with this short screencast:
 If you are a plugin developer and would like to add your own things/events to Simple History
 you can do that by calling the function simple_history_add like this:
 `<?php
-# will return “Plugin your_plugin_name Edited”
-simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
-?>`
 
-`<?php simple_history_add("action=repaired&object_type=starship&object_name=USS Enterprise"); ?>`
+# Will show “Plugin your_plugin_name Edited” in the history log
+simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+
+# Will show the history item "Starship USS Enterprise repaired"
+simple_history_add("action=repaired&object_type=Starship&object_name=USS Enterprise");
+
+?>
+`
 
 ####  Translations/Languages
 
@@ -68,7 +74,7 @@ This plugin is available in the following languages:
 1. Activate the plugin through the "Plugins" menu in WordPress
 1. Done!
 
-Now Simple History will be visible both on the dashboard and in the menu under pages.
+Now Simple History will be visible in a submenu under the dashboard main menu. You can also show it directly on the dashboard by modified Simple History's settings page.
 
 == Feedback ==
 Like the plugin? Dislike it? Got bugs or feature request?
@@ -77,7 +83,7 @@ I can do something about it.
 
 == Screenshots ==
 
-1. Simple History as it looks on your (well, mine anyway..) dashboard.
+1. Simple History showing som recent changes to my posts, users and attachments.
 
 2. Simple History settings. Choose to show the plugin on your dashboard, or as a separately page. Or both. Or none, since you can choose
 to only use the secret RSS feed to keep track of the changes on you web site/WordPress installation.
@@ -85,6 +91,31 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 1.0.5 =
+- Fixed: some translation issues, including updated POT-file for translators.
+
+= 1.0.4 =
+- You may want to clear the history database after this update because the items in the log will have mixed translate/untranslated status and it may look/work a bit strange.
+- Added: Option to clear the database of log items.
+- Changed: No longer stored translated history items in the log. This makes the history work even if/when you switch langauge of WordPress.
+- Fixed: if for example a post was editied several times and during these edits it changed name, it would end up at different occasions. Now it's correctly stored as one event with several occasions.
+- Some more items are translateable
+
+= 1.0.3 =
+- Updated German translation
+- Some translation fixes
+
+= 1.0.2 =
+- Fixed a translation bug
+- Added updated German translation
+
+= 1.0.1 =
+- The pagination no longer disappear after clickin "occasions"
+- Fixed: AJAX loading of new history items didn't work.
+- New filter: simple_history_view_history_capability. Default is "edit_pages". Modify this to change what cabability is required to view the history.
+- Modified: styles and scripts are only added on pages that use/show Simple History
+- Updated: new POT file. So translators my want to update their translations...
 
 = 1.0 =
 - Added: pagination. Gives you more information, for example the number of items, and quicker access to older history items. Also looks more like the rest of the WordPress GUI.
