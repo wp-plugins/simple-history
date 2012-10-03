@@ -75,6 +75,10 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		$dummy = __("attachment", "simple-history");
 		$dummy = __("user", "simple-history");
 		$dummy = __("settings page", "simple-history");
+		$dummy = __("edited", "simple-history");
+		$dummy = __("comment", "simple-history");
+		$dummy = __("logged in", "simple-history");
+		$dummy = __("logged out", "simple-history");
 	}
 
 	function plugin_action_links($actions, $b, $c, $d) {
@@ -1490,7 +1494,7 @@ function simple_history_print_history($args = null) {
 			} elseif ("comment" == $object_type_lcase) {
 				
 				$comment_link = get_edit_comment_link($object_id);
-				$output .= ucwords(esc_html__(ucfirst($object_type), "simple-history")) . " " . esc_html($object_subtype) . " <a href='$comment_link'><span class='simple-history-title'>" . esc_html($object_name) . "\"</span></a> " . esc_html__($action, "simple-history");
+				$output .= ucwords(esc_html__(ucfirst($object_type))) . " " . esc_html($object_subtype) . " <a href='$comment_link'><span class='simple-history-title'>" . esc_html($object_name) . "\"</span></a> " . esc_html__($action, "simple-history");
 
 			} else {
 
