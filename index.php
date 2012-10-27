@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.0.5
+Version: 1.0.6
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.0.5");
+define( "SIMPLE_HISTORY_VERSION", "1.0.6");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
@@ -38,9 +38,8 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 	 
 	 var
 	 	$plugin_foldername_and_filename,
-	 	$view_history_capability;
-
-	 static $pager_size = 5;
+	 	$view_history_capability
+	 	;
 
 	 function __construct() {
 	 
@@ -56,6 +55,11 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		$this->view_history_capability = apply_filters("simple_history_view_history_capability", $this->view_history_capability);
 		
 		$this->add_types_for_translation();
+	}
+	
+	function get_pager_size() {
+		$pager_size = get_option("simple_history_pager_size", 5);
+		return $pager_size;
 	}
 	
 	/**
@@ -251,13 +255,15 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 		add_settings_section("simple_history_settings_section", __("", "simple-history"), "simple_history_settings_page", "simple_history_settings_menu_slug");
 
-		add_settings_field("simple_history_settings_field_1", __("Show Simple History", "simple-history"), 	"simple_history_settings_field", 			"simple_history_settings_menu_slug", "simple_history_settings_section");
-		add_settings_field("simple_history_settings_field_2", __("RSS feed", "simple-history"), 			"simple_history_settings_field_rss", 		"simple_history_settings_menu_slug", "simple_history_settings_section");
-		add_settings_field("simple_history_settings_field_4", __("Clear log", "simple-history"), 			"simple_history_settings_field_clear_log",	"simple_history_settings_menu_slug", "simple_history_settings_section");
-		add_settings_field("simple_history_settings_field_3", __("Donate", "simple-history"), 				"simple_history_settings_field_donate",		"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_1", __("Show Simple History", "simple-history"), 	"simple_history_settings_field", 							"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_5", __("Number of items per page", "simple-history"), 		"simple_history_settings_field_number_of_items", 			"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_2", __("RSS feed", "simple-history"), 			"simple_history_settings_field_rss", 						"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_4", __("Clear log", "simple-history"), 			"simple_history_settings_field_clear_log",					"simple_history_settings_menu_slug", "simple_history_settings_section");
+		add_settings_field("simple_history_settings_field_3", __("Donate", "simple-history"), 				"simple_history_settings_field_donate",						"simple_history_settings_menu_slug", "simple_history_settings_section");
 
 		register_setting("simple_history_settings_group", "simple_history_show_on_dashboard");
 		register_setting("simple_history_settings_group", "simple_history_show_as_page");
+		register_setting("simple_history_settings_group", "simple_history_pager_size");
 	
 	}
 
@@ -359,6 +365,8 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 
 	function ajax() {
 	
+		global $simple_history;
+	
 		$type = isset($_POST["type"]) ? $_POST["type"] : "";
 		$subtype = isset($_POST["subtype"]) ? $_POST["subtype"] : "";
 	
@@ -372,10 +380,10 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 		}
 	
 		// number of items to get
-		$items = (int) (isset($_POST["items"])) ? $_POST["items"] : 5;
+		$items = (int) (isset($_POST["items"])) ? $_POST["items"] : $simple_history->get_pager_size();
 
 		// number of prev added items = number of items to skip before starting to add $items num of new items
-		$num_added = (int) (isset($_POST["num_added"])) ? $_POST["num_added"] : 5;
+		$num_added = (int) (isset($_POST["num_added"])) ? $_POST["num_added"] : $simple_history->get_pager_size();
 	
 		$search = (isset($_POST["search"])) ? $_POST["search"] : "";
 	
@@ -413,7 +421,7 @@ define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
 			$all_items = simple_history_get_items_array($args);
 			$arr_json["filtered_items_total_count"] = sizeof($all_items);
 			$arr_json["filtered_items_total_count_string"] = sprintf(_n('One item', '%1$d items', sizeof($all_items), "simple-history"), sizeof($all_items));
-			$arr_json["filtered_items_total_pages"] = ceil($arr_json["filtered_items_total_count"] / simple_history::$pager_size);
+			$arr_json["filtered_items_total_pages"] = ceil($arr_json["filtered_items_total_count"] / $simple_history->get_pager_size());
 		}
 		
 		header("Content-type: application/json");
@@ -444,6 +452,28 @@ function simple_history_setting_show_as_page() {
 	$setting = get_option("simple_history_show_as_page", 1);
 	$setting = apply_filters("simple_history_show_as_page", $setting);
 	return (bool) $setting;
+
+}
+
+function simple_history_settings_field_number_of_items() {
+	
+	global $simple_history;
+	$current_pager_size = $simple_history->get_pager_size();
+
+	?>
+	<select name="simple_history_pager_size">
+		<option <?php echo $current_pager_size == 5 ? "selected" : "" ?> value="5">5</option>
+		<option <?php echo $current_pager_size == 10 ? "selected" : "" ?> value="10">10</option>
+		<option <?php echo $current_pager_size == 15 ? "selected" : "" ?> value="15">15</option>
+		<option <?php echo $current_pager_size == 20 ? "selected" : "" ?> value="20">20</option>
+		<option <?php echo $current_pager_size == 25 ? "selected" : "" ?> value="25">25</option>
+		<option <?php echo $current_pager_size == 30 ? "selected" : "" ?> value="30">30</option>
+		<option <?php echo $current_pager_size == 40 ? "selected" : "" ?> value="40">40</option>
+		<option <?php echo $current_pager_size == 50 ? "selected" : "" ?> value="50">50</option>
+		<option <?php echo $current_pager_size == 75 ? "selected" : "" ?> value="75">75</option>
+		<option <?php echo $current_pager_size == 100 ? "selected" : "" ?> value="100">100</option>
+	</select>
+	<?
 
 }
 
@@ -874,6 +904,8 @@ function simple_history_dashboard() {
 // own page under dashboard
 function simple_history_management_page() {
 
+	global $simple_history;
+
 	simple_history_purge_db();
 
 	?>
@@ -882,7 +914,7 @@ function simple_history_management_page() {
 		<h2><?php echo __("History", 'simple-history') ?></h2>
 		<?php	
 		simple_history_print_nav(array("from_page=1"));
-		echo simple_history_print_history(array("items" => 5, "from_page" => "1"));
+		echo simple_history_print_history(array("items" => $simple_history->get_pager_size(), "from_page" => "1"));
 		echo simple_history_get_pagination();
 		?>
 	</div>
@@ -1094,9 +1126,10 @@ function simple_history_print_nav() {
 function simple_history_get_pagination() {
 
 	// pagination
+	global $simple_history;
 	$all_items = simple_history_get_items_array("items=all");
 	$items_count = sizeof($all_items);
-	$pages_count = ceil($items_count/simple_history::$pager_size);
+	$pages_count = ceil($items_count/$simple_history->get_pager_size());
 	$page_current = 1;
 
 	$out = sprintf('
@@ -1133,11 +1166,11 @@ function simple_history_get_pagination() {
 // return an array with all events and occasions
 function simple_history_get_items_array($args = "") {
 
-	global $wpdb;
+	global $wpdb, $simple_history;
 	
 	$defaults = array(
 		"page"        => 0,
-		"items"       => 5,
+		"items"       => $simple_history->get_pager_size(),
 		"filter_type" => "",
 		"filter_user" => "",
 		"is_ajax"     => false,
@@ -1299,11 +1332,13 @@ function simple_history_get_items_array($args = "") {
 // taking filtrering into consideration
 function simple_history_print_history($args = null) {
 	
+	global $simple_history;
+	
 	$arr_events = simple_history_get_items_array($args);
 	#sf_d($args);sf_d($arr_events);
 	$defaults = array(
 		"page" => 0,
-		"items" => 5,
+		"items" => $simple_history->get_pager_size(),
 		"filter_type" => "",
 		"filter_user" => "",
 		"is_ajax" => false
