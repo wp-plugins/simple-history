@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.0.6
+Version: 1.0.7
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,9 +27,10 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.0.6");
+define( "SIMPLE_HISTORY_VERSION", "1.0.7");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
-define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/');
+// define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/'); 	// http://playground.ep/wordpress/wp-content/plugins/simple-history/
+define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
 
 /**
  * Let's begin on a class, since they rule so much more than functions.
@@ -473,7 +474,7 @@ function simple_history_settings_field_number_of_items() {
 		<option <?php echo $current_pager_size == 75 ? "selected" : "" ?> value="75">75</option>
 		<option <?php echo $current_pager_size == 100 ? "selected" : "" ?> value="100">100</option>
 	</select>
-	<?
+	<?php
 
 }
 
@@ -557,8 +558,6 @@ function simple_history_update_rss_secret() {
 }
 
 function simple_history_settings_field_rss() {
-	?>
-	<?php
 	$create_new_secret = false;
 	if (isset($_GET["simple_history_rss_update_secret"]) && $_GET["simple_history_rss_update_secret"]) {
 		$create_new_secret = true;
