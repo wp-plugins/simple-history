@@ -3,8 +3,8 @@ Contributors: eskapism, MarsApril
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 3.0
-Tested up to: 3.4.2
-Stable tag: 1.0.7
+Tested up to: 3.5
+Stable tag: 1.0.8
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -46,12 +46,37 @@ If you are a plugin developer and would like to add your own things/events to Si
 you can do that by calling the function simple_history_add like this:
 `<?php
 
-# Will show “Plugin your_plugin_name Edited” in the history log
-simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+# Check that function exists before trying to use it
+# Just in case someone disabled the history plugin or similar
+if (function_exists("simple_history_add")) {
 
-# Will show the history item "Starship USS Enterprise repaired"
-simple_history_add("action=repaired&object_type=Starship&object_name=USS Enterprise");
+	# Log that an email has been sent
+	simple_history_add(array(
+		"object_type" => "Email",
+		"action" => "sent",
+		"object_name" => "Hi there"
+	));
 
+	# Will show “Plugin your_plugin_name Edited” in the history log
+	simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+	
+	# Will show the history item "Starship USS Enterprise repaired"
+	simple_history_add("action=repaired&object_type=Starship&object_name=USS Enterprise");
+	
+?>
+`
+
+#### Never clear the history
+
+By default the items in the history log is cleared automatically afer 60 days. 
+You can override this behaviour by using a filter, like this:
+
+`
+<?php
+// Never clear the database
+add_action("simple_history_allow_db_purge", function($bool) {
+	return false;
+});
 ?>
 `
 
@@ -91,6 +116,10 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 3. The RSS feed with changes, as shown in Firefox.
 
 == Changelog ==
+
+= 1.0.8 =
+- Added: filter simple_history_allow_db_purge that is used to determine if the history should be purged/cleaned after 60 days or not. Return false and it will never be cleaned.
+- Fixed: fixed a security issue with the RSS feed. User who should not be able to view the feed could get access to it. Please update to this version to keep your change log private!
 
 = 1.0.7 =
 - Fixed: Used a PHP shorthand opening tag at a place. Sorry!
