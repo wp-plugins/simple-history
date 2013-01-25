@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.0.7
+Version: 1.0.8
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.0.7");
+define( "SIMPLE_HISTORY_VERSION", "1.0.8");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 // define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/'); 	// http://playground.ep/wordpress/wp-content/plugins/simple-history/
 define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
@@ -347,7 +347,6 @@ define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://p
 						<title><?php printf(__("History for %s", 'simple-history'), get_bloginfo("name")) ?></title>
 						<description><?php printf(__("WordPress History for %s", 'simple-history'), get_bloginfo("name")) ?></description>
 						<link><?php echo get_bloginfo("siteurl") ?></link>
-						<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
 						<item>
 							<title><?php _e("Wrong RSS secret", 'simple-history')?></title>
 							<description><?php _e("Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed.", 'simple-history')?></description>
@@ -886,10 +885,18 @@ function simple_history_add($args) {
  * @todo: let user set value, if any
  */
 function simple_history_purge_db() {
+
+	$do_purge_history = TRUE;
+	$do_purge_history = apply_filters("simple_history_allow_db_purge", $do_purge_history);
+
 	global $wpdb;
 	$tableprefix = $wpdb->prefix;
 	$sql = "DELETE FROM {$tableprefix}simple_history WHERE DATE_ADD(date, INTERVAL 60 DAY) < now()";
-	$wpdb->query($sql);
+
+	if ($do_purge_history) {
+		$wpdb->query($sql);
+	}
+
 }
 
 // widget on dashboard
