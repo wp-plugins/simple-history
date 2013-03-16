@@ -30,7 +30,21 @@ load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 define( "SIMPLE_HISTORY_VERSION", "1.0.9");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 // define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/'); 	// http://playground.ep/wordpress/wp-content/plugins/simple-history/
-define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
+// define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
+
+// Find the plugin directory URL
+$aa = __FILE__;
+if ( isset( $mu_plugin ) ) {
+	$aa = $mu_plugin;
+}
+if ( isset( $network_plugin ) ) {
+	$aa = $network_plugin;
+}
+if ( isset( $plugin ) ) {
+	$aa = $plugin;
+}
+$plugin_dir_url = plugin_dir_url(basename($aa)) . 'simple-history/';
+define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 
 /**
  * Let's begin on a class, since they rule so much more than functions.
@@ -304,7 +318,7 @@ define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://p
 						<title><?php printf(__("History for %s", 'simple-history'), get_bloginfo("name")) ?></title>
 						<description><?php printf(__("WordPress History for %s", 'simple-history'), get_bloginfo("name")) ?></description>
 						<link><?php echo get_bloginfo("url") ?></link>
-						<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/rss+xml" />
+						<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/atom+xml" />
 						<?php
 						$arr_items = simple_history_get_items_array("items=10");
 						foreach ($arr_items as $one_item) {
@@ -312,6 +326,7 @@ define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://p
 							$object_name = esc_html($one_item->object_name);
 							$user = get_user_by("id", $one_item->user_id);
 							$user_nicename = esc_html(@$user->user_nicename);
+							$user_email = esc_html(@$user->user_email);
 							$description = "";
 							if ($user_nicename) {
 								$description .= sprintf(__("By %s", 'simple-history'), $user_nicename);
@@ -324,14 +339,15 @@ define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://p
 	
 							$item_title = esc_html($object_type) . " \"" . esc_html($object_name) . "\" {$one_item->action}";
 							$item_title = html_entity_decode($item_title, ENT_COMPAT, "UTF-8");
-							$item_guid = get_bloginfo("siteurl") . "?simple-history-guid=" . $one_item->id;
+							$item_guid = home_url() . "?simple-history-guid=" . $one_item->id;
 							?>
 							  <item>
 								 <title><![CDATA[<?php echo $item_title; ?>]]></title>
 								 <description><![CDATA[<?php echo $description ?>]]></description>
-								 <author><?php echo $user_nicename ?></author>
+								 <author><?php echo $user_email . ' (' . $user_nicename . ')' ?></author>
 								 <pubDate><?php echo date("D, d M Y H:i:s", strtotime($one_item->date)) ?> GMT</pubDate>
 								 <guid isPermaLink="false"><?php echo $item_guid ?></guid>
+								 <link><?php echo $item_guid ?></link>
 							  </item>
 							<?php
 						}
@@ -346,12 +362,12 @@ define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://p
 					<channel>
 						<title><?php printf(__("History for %s", 'simple-history'), get_bloginfo("name")) ?></title>
 						<description><?php printf(__("WordPress History for %s", 'simple-history'), get_bloginfo("name")) ?></description>
-						<link><?php echo get_bloginfo("siteurl") ?></link>
+						<link><?php echo home_url() ?></link>
 						<item>
 							<title><?php _e("Wrong RSS secret", 'simple-history')?></title>
 							<description><?php _e("Your RSS secret for Simple History RSS feed is wrong. Please see WordPress settings for current link to the RSS feed.", 'simple-history')?></description>
 							<pubDate><?php echo date("D, d M Y H:i:s", time()) ?> GMT</pubDate>
-							<guid><?php echo get_bloginfo("siteurl") . "?simple-history-guid=wrong-secret" ?></guid>
+							<guid><?php echo home_url() . "?simple-history-guid=wrong-secret" ?></guid>
 						</item>
 					</channel>
 				</rss>
