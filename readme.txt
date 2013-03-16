@@ -1,5 +1,5 @@
 === Simple History ===
-Contributors: eskapism, MarsApril
+Contributors: eskapism, MarsApril, offereins
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
 Requires at least: 3.0
@@ -115,13 +115,16 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 3. The RSS feed with changes, as shown in Firefox.
 
+4. Widgets can be tracked too!
+
 == Changelog ==
 
 = x.x.x =
+- Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins. Super thanks!
+- With the help of Simple History Extender this plugin also tracks changes made in bbPress, Gravity Forms and in Widges. Awesome!
 - Added user email to RSS feed + some other small changed to make it compatible with IFTTT.com. Thanks to phoenixMagoo for the code changes. Fixes http://wordpress.org/support/topic/suggestions-a-couple-of-tweaks-to-the-rss-feed.
 - Small fixes here and there, for example changing deprecated WordPress functions to not deprecated
 - Changed the way the plugin directory was determined. Perhaps and hopefully this fixes some problems with multi site and plugin in different locations and stuff like that
-- 
 
 = 1.0.9 =
 - Added French translation

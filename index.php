@@ -70,6 +70,11 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 		$this->view_history_capability = apply_filters("simple_history_view_history_capability", $this->view_history_capability);
 		
 		$this->add_types_for_translation();
+
+		// Load Extender
+		#require_once( plugin_foldername_and_filename . "/sim" );
+		require_once ( dirname(__FILE__) . "/simple-history-extender/simple-history-extender.php" );
+
 	}
 	
 	function get_pager_size() {
