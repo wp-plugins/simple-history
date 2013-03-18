@@ -1122,6 +1122,10 @@ function simple_history_print_nav() {
 		$link = esc_html(add_query_arg("simple_history_user_to_show", ""));
 		$str_users .= "<li $css><a href='$link'>" . __("By all users", 'simple-history') ."</a> | </li>";
 		foreach ($arr_users as $user_id => $user_info) {
+
+			$user = new WP_User($user_id);
+			if ( ! $user->exists() ) continue;
+
 			$link = esc_html(add_query_arg("simple_history_user_to_show", $user_id));
 			$css = "";
 			if ($user_id == $simple_history_user_to_show) {
