@@ -183,6 +183,12 @@ ul.simple-history-occasions li {
 	right: 0;
 	bottom: -3px;
 }
+
+.rtl .simple-history-rss-feed-page {
+	right: auto;
+	left: 0;
+}
+
 .simple-history-rss-feed-page span {
 	float: left;
 }
@@ -203,3 +209,8 @@ ul.simple-history-occasions li {
 .simple-history-tablenav .tablenav-pages {
 	float: none;
 }
+
+.simple-history-tablenav .displaying-num {
+	display: inline-block;
+}
+

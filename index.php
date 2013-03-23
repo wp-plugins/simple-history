@@ -103,6 +103,9 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 		$dummy = __("comment", "simple-history");
 		$dummy = __("logged in", "simple-history");
 		$dummy = __("logged out", "simple-history");
+		$dummy = __("added", "simple-history");
+		$dummy = __("modified", "simple-history");
+		$dummy = __("upgraded it\'s database", "simple-history");
 	}
 
 	function plugin_action_links($actions, $b, $c, $d) {
@@ -582,7 +585,7 @@ function simple_history_settings_field_rss() {
 	if (isset($_GET["simple_history_rss_update_secret"]) && $_GET["simple_history_rss_update_secret"]) {
 		$create_new_secret = true;
 		echo "<div class='simple-history-settings-page-updated'><p>";
-		_e("Created new secret RSS adress", 'simple-history');
+		_e("Created new secret RSS address", 'simple-history');
 		echo "</p></div>";
 	}
 	

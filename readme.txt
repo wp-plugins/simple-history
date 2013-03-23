@@ -125,6 +125,7 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 - Added user email to RSS feed + some other small changed to make it compatible with IFTTT.com. Thanks to phoenixMagoo for the code changes. Fixes http://wordpress.org/support/topic/suggestions-a-couple-of-tweaks-to-the-rss-feed.
 - Small fixes here and there, for example changing deprecated WordPress functions to not deprecated
 - Changed the way the plugin directory was determined. Perhaps and hopefully this fixes some problems with multi site and plugin in different locations and stuff like that
+- Style fixes for RTL languages
 
 = 1.0.9 =
 - Added French translation
