@@ -12,12 +12,12 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-if ( !class_exists( 'SH_Extend_Widgets' ) ) :
+if ( !class_exists( 'Simple_History_Extend_Widgets' ) ) :
 
 /**
  * Plugin class
  */
-class SH_Extend_Widgets extends SH_Extend {
+class Simple_History_Extend_Widgets extends Simple_History_Extend {
 
 	function __construct(){
 		parent::__construct( array(
@@ -99,6 +99,6 @@ class SH_Extend_Widgets extends SH_Extend {
 	}
 }
 
-new SH_Extend_Widgets();
+new Simple_History_Extend_Widgets();
 
 endif; // class_exists

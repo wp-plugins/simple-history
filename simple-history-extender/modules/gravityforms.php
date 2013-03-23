@@ -15,12 +15,12 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-if ( !class_exists( 'SH_Extend_GravityForms' ) ) :
+if ( !class_exists( 'Simple_History_Extend_GravityForms' ) ) :
 
 /**
  * Plugin class
  */
-class SH_Extend_GravityForms extends SH_Extend {
+class Simple_History_Extend_GravityForms extends Simple_History_Extend {
 
 	function __construct(){
 		parent::__construct( array(
@@ -220,6 +220,6 @@ class SH_Extend_GravityForms extends SH_Extend {
 	
 }
 
-new SH_Extend_GravityForms();
+new Simple_History_Extend_GravityForms();
 
 endif; // class_exists

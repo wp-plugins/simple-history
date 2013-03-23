@@ -202,7 +202,7 @@ class SimpleHistoryExtender {
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php'  );
 
 		// Load Extend class which the modules depend upon
-		require( $this->plugin_dir  . 'class.sh-extend.php' );
+		require( $this->plugin_dir  . 'class.simple-history-extend.php' );
 
 		// Load modules from directory
 		foreach ( scandir( $this->modules_dir ) as $file ){
@@ -251,6 +251,7 @@ class SimpleHistoryExtender {
 		$retval = array();
 
 		// Sanitize input
+		if ( ! is_array($input) ) $input = array();
 		foreach ( $input as $module => $args )
 			$retval[$module]['active'] = isset( $args['active'] ) ? true : false;
 
@@ -269,7 +270,7 @@ class SimpleHistoryExtender {
 				|| ( isset( $old[$module] ) && $old[$module]['active'] !== $retval[$module]['active'] )
 				){
 
-				SH_Extend::extend( array(
+				Simple_History_Extend::extend( array(
 					'action' => $retval[$module]['active'] ? __('activated', 'sh-extender') : __('deactivated', 'sh-extender'),
 					'type'   => __('Simple History Extender Module', 'sh-extender'),
 					'name'   => $field['title'],

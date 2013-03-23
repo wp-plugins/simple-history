@@ -15,12 +15,12 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-if ( !class_exists( 'SH_Extend_BBPress' ) ) :
+if ( !class_exists( 'Simple_History_Extend_BBPress' ) ) :
 
 /**
  * Plugin class
  */
-class SH_Extend_BBPress extends SH_Extend {
+class Simple_History_Extend_BBPress extends Simple_History_Extend {
 
 	function __construct(){
 		parent::__construct( array(
@@ -395,6 +395,6 @@ class SH_Extend_BBPress extends SH_Extend {
 
 }
 
-new SH_Extend_BBPress();
+new Simple_History_Extend_BBPress();
 
 endif; // class_exists

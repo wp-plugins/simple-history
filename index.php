@@ -72,7 +72,6 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 		$this->add_types_for_translation();
 
 		// Load Extender
-		#require_once( plugin_foldername_and_filename . "/sim" );
 		require_once ( dirname(__FILE__) . "/simple-history-extender/simple-history-extender.php" );
 
 	}
@@ -311,8 +310,19 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 	
 		// check for RSS
 		// don't know if this is the right way to do this, but it seems to work!
-		if (isset($_GET["simple_history_get_rss"])) {
-	
+		if ( isset($_GET["simple_history_get_rss"]) ) {
+
+			$this->output_rss();
+
+		}
+		
+	}
+
+	/**
+	 * Output RSS
+	 */
+	function output_rss() {
+
 			$rss_secret_option = get_option("simple_history_rss_secret");
 			$rss_secret_get = $_GET["rss_secret"];
 	
@@ -344,10 +354,14 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 								$description .= sprintf(__("%d occasions", 'simple-history'), sizeof($one_item->occasions));
 								$description .= "<br />";
 							}
+							$description = apply_filters("simple_history_rss_item_description", $description, $one_item);
 	
 							$item_title = esc_html($object_type) . " \"" . esc_html($object_name) . "\" {$one_item->action}";
 							$item_title = html_entity_decode($item_title, ENT_COMPAT, "UTF-8");
+							$item_title = apply_filters("simple_history_rss_item_title", $item_title, $one_item);
+
 							$item_guid = home_url() . "?simple-history-guid=" . $one_item->id;
+
 							?>
 							  <item>
 								 <title><![CDATA[<?php echo $item_title; ?>]]></title>
@@ -383,9 +397,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 	
 			}
 			exit;
-		}
-	
-	}
+	} // rss
 
 	function ajax() {
 	
@@ -1248,8 +1260,8 @@ function simple_history_get_items_array($args = "") {
 	$tableprefix = $wpdb->prefix;
 
 	$sql = "SELECT * FROM {$tableprefix}simple_history $where ORDER BY date DESC, id DESC ";
-#sf_d($args);
-#echo "\n$sql\n";
+	#sf_d($args);
+	#echo "\n$sql\n";
 	$rows = $wpdb->get_results($sql);
 	
 	$loopNum = 0;

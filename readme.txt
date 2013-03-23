@@ -14,12 +14,17 @@ Simple History shows recent changes made within WordPress, directly on your dash
 
 The plugin works as a log/history/audit log/version history of the most important events that occur in WordPress.
 
-For example:
+Out of the box Simple History has support for:
 
-* see what posts and pages that have been created, modified or deleted
-* see what attachments have been uploaded, modified or deleted
-* see what plugins that have been activated or deactivated
-* search through the history/log to find the change/post/article you are looking for
+* **Posts and pages - see who added, updated or deleted a post or page
+* **Attachments** - see who added, updated or deleted an attachment
+* **Comments** - see who edited, approved or removed a comment
+* **Widgets** - get info when someone adds, updates or removes a widget in a sidebar
+* **Plugins** - activation and deactivation
+* **User profiles** - info about added, updated or removed users
+* **User logins** - see when a user login & logut
+* **bbPress** - view changes to forums and topics and view user changes
+* **Gravity Forms** - see who created, edited or deleted a form, field, or entry
 
 There is also a **RSS feed of changes** available, so you can keep track of the changes made
 via your favorite RSS reader on your phone, on your iPad, or on your computer.
@@ -66,6 +71,8 @@ if (function_exists("simple_history_add")) {
 ?>
 `
 
+There's also a simple class that you can extend to add support for custom history items. It's super simple to use! Take a look at `class.simple-history-extend.php` to get started.
+
 #### Never clear the history
 
 By default the items in the history log is cleared automatically afer 60 days. 
@@ -88,6 +95,10 @@ This plugin is available in the following languages:
 * German
 * Simplified Chinese
 * Swedish
+* French
+* Arabic
+
+Lots of thanks to the translators!
 
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
@@ -120,7 +131,7 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 == Changelog ==
 
 = x.x.x =
-- Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins. Super thanks!
+- Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins (lmoffereins@gmail.com). Super thanks!
 - With the help of Simple History Extender this plugin also tracks changes made in bbPress, Gravity Forms and in Widges. Awesome!
 - Added user email to RSS feed + some other small changed to make it compatible with IFTTT.com. Thanks to phoenixMagoo for the code changes. Fixes http://wordpress.org/support/topic/suggestions-a-couple-of-tweaks-to-the-rss-feed.
 - Small fixes here and there, for example changing deprecated WordPress functions to not deprecated
