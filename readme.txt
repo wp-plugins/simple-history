@@ -43,10 +43,12 @@ _"The site feels very slow since yesterday. Has anyone done anything special? ..
 that must be it."_
 
 #### See it in action
+
 See the plugin in action with this short screencast:
 [youtube http://www.youtube.com/watch?v=4cu4kooJBzs]
 
 #### Add your own events to simple history
+
 If you are a plugin developer and would like to add your own things/events to Simple History
 you can do that by calling the function simple_history_add like this:
 `<?php
@@ -71,7 +73,9 @@ if (function_exists("simple_history_add")) {
 ?>
 `
 
-There's also a simple class that you can extend to add support for custom history items. It's super simple to use! Take a look at `class.simple-history-extend.php` to get started.
+#### Add support for your own custom events
+
+There's also a simple class that you can extend to add support for custom history items. It's super simple to use! Take a look at `class.simple-history-extend.php` to get started, and then extending Simple_History_Extend and fill the required methods with their events and log messages.
 
 #### Never clear the history
 
@@ -130,13 +134,14 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
-= x.x.x =
+= 1.x =
 - Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins (lmoffereins@gmail.com). Super thanks!
 - With the help of Simple History Extender this plugin also tracks changes made in bbPress, Gravity Forms and in Widges. Awesome!
 - Added user email to RSS feed + some other small changed to make it compatible with IFTTT.com. Thanks to phoenixMagoo for the code changes. Fixes http://wordpress.org/support/topic/suggestions-a-couple-of-tweaks-to-the-rss-feed.
-- Small fixes here and there, for example changing deprecated WordPress functions to not deprecated
+- Added two filters for the RSS feed: simple_history_rss_item_title and simple_history_rss_item_description.
 - Changed the way the plugin directory was determined. Perhaps and hopefully this fixes some problems with multi site and plugin in different locations and stuff like that
 - Style fixes for RTL languages
+- Small fixes here and there, for example changing deprecated WordPress functions to not deprecated
 
 = 1.0.9 =
 - Added French translation

@@ -1635,12 +1635,10 @@ function simple_history_print_history($args = null) {
 				$output .= "</ul>";
 				$output .= "</div>";
 			}
-			
 
 			$output .= "</li>";
 
 			$loopNum++;
-
 
 		}
 		
