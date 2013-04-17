@@ -134,6 +134,9 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 == Changelog ==
 
+= 1.x =
+- Fixed: Plugin name is included when plugin is deactivated. Previosuly only folder name and name of php file was included.
+
 = 1.1 =
 - Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins (lmoffereins@gmail.com). Super thanks!
 - With the help of Simple History Extender this plugin also tracks changes made in bbPress, Gravity Forms and in Widges. Awesome!
@@ -292,3 +295,5 @@ by admin (John Doe), just now
 
 = 0.1 =
 * First public version. It works!
+
+
