@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.0.9
+Version: 1.1
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.0.9");
+define( "SIMPLE_HISTORY_VERSION", "1.1");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
 // define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/'); 	// http://playground.ep/wordpress/wp-content/plugins/simple-history/
 // define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
@@ -927,7 +927,11 @@ function simple_history_purge_db() {
 
 	global $wpdb;
 	$tableprefix = $wpdb->prefix;
-	$sql = "DELETE FROM {$tableprefix}simple_history WHERE DATE_ADD(date, INTERVAL 60 DAY) < now()";
+
+	$days = 60;
+	$days = (int) apply_filters("simple_history_db_purge_days_interval", $days);
+
+	$sql = "DELETE FROM {$tableprefix}simple_history WHERE DATE_ADD(date, INTERVAL $days DAY) < now()";
 
 	if ($do_purge_history) {
 		$wpdb->query($sql);
