@@ -43,8 +43,12 @@ if ( isset( $network_plugin ) ) {
 if ( isset( $plugin ) ) {
 	$aa = $plugin;
 }
-$plugin_dir_url = plugin_dir_url(basename($aa)) . 'simple-history/';
+
+$plugin_dir_url = plugin_dir_url(basename($aa)) . basename(dirname(__FILE__)) . '/';
 define("SIMPLE_HISTORY_URL", $plugin_dir_url);
+
+// http://playground-nightly.ep/wordpress/wp-content/plugins/simple-history/
+// sf_d( SIMPLE_HISTORY_URL );
 
 /**
  * Let's begin on a class, since they rule so much more than functions.
@@ -86,6 +90,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 	 * There is probably a better way to do this, but this should work anyway
 	 */
 	function add_types_for_translation() {
+		$dummy = __("added", "simple-history");
 		$dummy = __("approved", "simple-history");
 		$dummy = __("unapproved", "simple-history");
 		$dummy = __("marked as spam", "simple-history");
@@ -105,6 +110,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 		$dummy = __("added", "simple-history");
 		$dummy = __("modified", "simple-history");
 		$dummy = __("upgraded it\'s database", "simple-history");
+		$dummy = __("plugin", "simple-history");
 	}
 
 	function plugin_action_links($actions, $b, $c, $d) {
@@ -204,16 +210,19 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 		global $wpdb;
 
 		$db_version = get_option("simple_history_db_version");
+		$table_name = $wpdb->prefix . "simple_history";
 		// $db_version = FALSE;
 		
-		if ($db_version === FALSE) {
+		if ( false === $db_version ) {
+
 			// db fix has never been run
 			// user is on version 0.4 or earlier
 			// = database is not using utf-8
 			// so fix that
-			$table_name = $wpdb->prefix . "simple_history";
+			
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			#echo "begin upgrading database";
+			
 			// We change the varchar size to add one num just to force update of encoding. dbdelta didn't see it otherwise.
 			$sql = "CREATE TABLE " . $table_name . " (
 			  id int(10) NOT NULL AUTO_INCREMENT,
@@ -240,8 +249,16 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 			#echo "done upgrading database";
 			
 			update_option("simple_history_db_version", 1);
-		} else {
-			// echo "db up to date";
+
+		} // done pre db ver 1 things
+
+		// DB version is 1, upgrade to 2
+		if ( 1 == intval($db_version) ) {
+			
+			// Add column for free text
+			// require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+			// update_option("simple_history_db_version", 2);
+
 		}
 		
 	}
@@ -329,7 +346,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 			echo '<?xml version="1.0"?>';
 			$self_link = simple_history_get_rss_address();
 	
-			if ($rss_secret_option == $rss_secret_get) {
+			if ($rss_secret_option === $rss_secret_get) {
 				?>
 				<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 					<channel>
@@ -338,6 +355,16 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 						<link><?php echo get_bloginfo("url") ?></link>
 						<atom:link href="<?php echo $self_link; ?>" rel="self" type="application/atom+xml" />
 						<?php
+
+						// Add filters here
+						/*
+								"page"        => 0,
+								"items"       => $simple_history->get_pager_size(),
+								"filter_type" => "",
+								"filter_user" => "",
+								"search"      => "",
+								"num_added"   => 0
+						*/
 						$arr_items = simple_history_get_items_array("items=10");
 						foreach ($arr_items as $one_item) {
 							$object_type = ucwords($one_item->object_type);
@@ -399,6 +426,9 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 			exit;
 	} // rss
 
+	/**
+	 * Get history from ajax
+	 */
 	function ajax() {
 	
 		global $simple_history;
@@ -406,8 +436,15 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 		$type = isset($_POST["type"]) ? $_POST["type"] : "";
 		$subtype = isset($_POST["subtype"]) ? $_POST["subtype"] : "";
 	
-		$user = $_POST["user"];
-		if ($user == __( "By all users", 'simple-history' )) { $user = "";	}
+		// We get users by username, so get username from id
+		$user_id = (int) $_POST["user_id"];
+		if (empty($user_id)) {
+			$user = "";
+		} else {
+			$user_obj = new WP_User($user_id);
+			if ( ! $user_obj->exists() ) exit;
+			$user = $user_obj->user_login;
+		};
 	
 		// page to show. 1 = first page.
 		$page = 0;
@@ -616,8 +653,21 @@ function simple_history_settings_field_rss() {
 
 // @todo: move all add-related stuff to own file? there are so many of them.. kinda confusing, ey.
 
+/**
+ * Plugin is activated
+ * plugin_name is like admin-menu-tree-page-view/index.php
+ */
 function simple_history_activated_plugin($plugin_name) {
-	$plugin_name = urlencode($plugin_name);
+
+	// Fetch info about the plugin
+	$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_name );
+	
+	if ( is_array( $plugin_data ) && ! empty( $plugin_data["Name"] ) ) {
+		$plugin_name = urlencode( $plugin_data["Name"] );
+	} else {
+		$plugin_name = urlencode($plugin_name);
+	}
+
 	simple_history_add("action=activated&object_type=plugin&object_name=$plugin_name");
 }
 
@@ -957,9 +1007,11 @@ function simple_history_purge_db() {
 // widget on dashboard
 function simple_history_dashboard() {
 	simple_history_purge_db();
+	echo '<div class="wrap simple-history-wrap">';
 	simple_history_print_nav();
 	echo simple_history_print_history();
 	echo simple_history_get_pagination();
+	echo '</div>';
 }
 
 // own page under dashboard
@@ -971,7 +1023,7 @@ function simple_history_management_page() {
 
 	?>
 
-	<div class="wrap">
+	<div class="wrap simple-history-wrap">
 		<h2><?php echo __("History", 'simple-history') ?></h2>
 		<?php	
 		simple_history_print_nav(array("from_page=1"));
@@ -1043,6 +1095,9 @@ function simple_history_install() {
 
 }
 
+/**
+ * Output navigation at top with filters for type, users, and free text search input
+ */
 function simple_history_print_nav() {
 
 	global $wpdb;
@@ -1054,27 +1109,63 @@ function simple_history_print_nav() {
 	} else {
 		$simple_history_type_to_show = "";
 	}
-	$sql = "SELECT DISTINCT object_type, object_subtype FROM {$tableprefix}simple_history ORDER BY object_type, object_subtype";
+
+	// Get all object types and object subtypes
+	// order by the number of times they occur
+	$sql = "SELECT 
+				count(object_type) AS object_type_count,
+				object_type, object_subtype 
+			FROM {$tableprefix}simple_history 
+			GROUP BY object_type, object_subtype
+			ORDER BY object_type_count DESC, object_type, object_subtype
+		";
 	$arr_types = $wpdb->get_results($sql);
 
-	$str_types = "";
-	$str_types .= "<ul class='simple-history-filter simple-history-filter-type'>";
 	$css = "";
 	if (empty($simple_history_type_to_show)) {
 		$css = "class='selected'";
 	}
 
+	// Begin list
+	$str_types = "";
+	$str_types .= "<ul class='simple-history-filter simple-history-filter-type'>";
+
+	// Begin select
+	$str_types_select = "";
+	$str_types_select .= "<select name='' class='simple-history-filter simple-history-filter-type'>";
+
+	$total_object_num_count = 0;
+	foreach ( $arr_types as $one_type ) {
+		$total_object_num_count += $one_type->object_type_count;
+	}
+
+	// First filter is "all types"
 	$link = esc_html(add_query_arg("simple_history_type_to_show", ""));
 	$str_types_desc = __("All types", 'simple-history');
-	$str_types .= "<li $css><a data-simple-history-filter-type='' href='$link'>" . esc_html($str_types_desc) . "</a> | </li>";
+	$str_types .= "<li $css><a data-simple-history-filter-type='' href='$link'>" . esc_html($str_types_desc) . " <span>($total_object_num_count)</span></a> | </li>";
+
+	$str_types_select .= sprintf('<option data-simple-history-filter-type="" data-simple-history-filter-subtype="" value="%1$s">%2$s (%3$d)</option>', $link, esc_html($str_types_desc), $total_object_num_count );
+
+	// Loop through all types
+	// $one_type->object_type = user | post | attachment | comment | plugin | attachment | post | Reply | Topic | Widget | Wordpress_core
+	// $one_type->object_subtype = page | nav_menu_item | ...
+	#sf_d($arr_types);
 	foreach ($arr_types as $one_type) {
+
 		$css = "";
+		$option_selected = "";
 		if ($one_type->object_subtype && $simple_history_type_to_show == ($one_type->object_type."/".$one_type->object_subtype)) {
 			$css = "class='selected'";
+			$option_selected = " selected ";
 		} elseif (!$one_type->object_subtype && $simple_history_type_to_show == $one_type->object_type) {
 			$css = "class='selected'";
+			$option_selected = " selected ";
 		}
+
+		// Begin LI
 		$str_types .= sprintf('<li %1$s data-simple-history-filter-type="%2$s" data-simple-history-filter-subtype="%3$s" >', $css, $one_type->object_type, $one_type->object_subtype);
+
+		// Create link to filter this type + subtype
 		$arg = "";
 		if ($one_type->object_subtype) {
 			$arg = $one_type->object_type."/".$one_type->object_subtype;
@@ -1083,40 +1174,84 @@ function simple_history_print_nav() {
 		}
 		$link = esc_html(add_query_arg("simple_history_type_to_show", $arg));
 		$str_types .= "<a href='$link'>";
+
+		// Begin option
+		$str_types_select .= sprintf(
+			'<option %1$s data-simple-history-filter-type="%2$s" data-simple-history-filter-subtype="%3$s" value="%4$s">',
+			$option_selected, // 1
+			$one_type->object_type, // 2
+			$one_type->object_subtype, // 3
+			$link // 4
+		);
 		
 		// Some built in types we translate with built in translation, the others we use simple history for
+		// TODO: use WP-function to get all built in types?
 		$arr_built_in_types_with_translation = array("page", "post");
 		$object_type_translated = "";
 		$object_subtype_translated = "";
-		if ( in_array($one_type->object_type, $arr_built_in_types_with_translation) ) {
-			$object_type_translated = esc_html__(ucfirst($one_type->object_type));
-		} else {
-			$object_type_translated = esc_html__(ucfirst($one_type->object_type), "simple-history");			
-		}
-		if (in_array($one_type->object_subtype, $arr_built_in_types_with_translation) ) {
-			$object_subtype_translated = esc_html__(ucfirst($one_type->object_subtype));			
-		} else {
-			$object_subtype_translated = esc_html__(ucfirst($one_type->object_subtype), "simple-history");
+
+		// Get built in post types
+		$arr_built_in_post_types = get_post_types( array("_builtin" => true) );
+
+		$object_type_translated = "";
+		$object_subtype_translated = "";
+		if ( in_array( $one_type->object_type, $arr_built_in_post_types ) ) {
+			
+			$object_post_type_object = get_post_type_object( $one_type->object_type );
+			$object_type_translated = $object_post_type_object->labels->singular_name;
+
+			$object_subtype_post_type_object = get_post_type_object( $one_type->object_subtype );
+			if ( ! is_null( $object_subtype_post_type_object ) ) {
+				$object_subtype_translated = $object_subtype_post_type_object->labels->singular_name;;
+			}
+
 		}
 		
+		if ( empty( $object_type_translated ) ) {
+			$object_type_translated = ucfirst( esc_html__( $one_type->object_type, "simple-history") );
+		}
+
+		if ( empty( $object_subtype_translated ) ) {
+			$object_subtype_translated = ucfirst( esc_html__( $one_type->object_subtype, "simple-history") );
+		}
+		
+		// Add name of type (post / attachment / user / etc.)
 		$str_types .= $object_type_translated;
+		$str_types_select .= $object_type_translated;
+
+		// And subtype, if different from main type
 		if ($object_subtype_translated && $object_subtype_translated != $object_type_translated) {
 			$str_types .= "/". $object_subtype_translated;
+			$str_types_select .= "/" . $object_subtype_translated;
 		}
+
+		// Add object count
+		$str_types .= sprintf(' <span>(%d)</span>', $one_type->object_type_count);
+		$str_types_select .= sprintf(' (%d)', $one_type->object_type_count);
 		
+		// Close link and li
 		$str_types .= "</a> | ";
 		$str_types .= "</li>";
+
+		// Close option
+		$str_types_select .= "\n</option>";
 		
 		// debug
 		#$str_types .= " type: " . $one_type->object_type;
 		#$str_types .= " type: " . ucfirst($one_type->object_type);
 		#$str_types .= " subtype: " . $one_type->object_subtype. " ";
 		
-	}
+	} // foreach arr types
+
 	$str_types .= "</ul>";
 	$str_types = str_replace("| </li></ul>", "</li></ul>", $str_types);
-	if (!empty($arr_types)) {
-		echo $str_types;
+
+	$str_types_select .= "\n</select>";
+
+	// Output filters
+	if ( ! empty( $arr_types ) ) {
+		// echo $str_types;
+		echo $str_types_select;
 	}
 
 	// fetch all users that are in the log
@@ -1125,7 +1260,9 @@ function simple_history_print_nav() {
 	foreach ($arr_users_regular as $one_user) {
 		$arr_users[$one_user->user_id] = array("user_id" => $one_user->user_id);
 	}
-	if (!empty($arr_users)) {
+	
+	if ( ! empty( $arr_users ) ) {
+	
 		foreach ($arr_users as $user_id => $one_user) {
 			$user = get_user_by("id", $user_id);
 			if ($user) {
@@ -1139,41 +1276,87 @@ function simple_history_print_nav() {
 				}
 			}
 		}
+
 	}
 
 	if (isset($arr_users) && $arr_users) {
+
 		if (isset($_GET["simple_history_user_to_show"])) {
 			$simple_history_user_to_show = $_GET["simple_history_user_to_show"];
 		} else {
 			$simple_history_user_to_show = "";
 		}
+
 		$str_users = "";
 		$str_users .= "<ul class='simple-history-filter simple-history-filter-user'>";
+
+		$str_users_select = "";
+		$str_users_select .= "<select name='' class='simple-history-filter simple-history-filter-user'>";
+
 		$css = "";
+		$option_selected = "";
 		if (empty($simple_history_user_to_show)) {
 			$css = " class='selected' ";
+			$option_selected = " selected ";
 		}
+
+		// All users
 		$link = esc_html(add_query_arg("simple_history_user_to_show", ""));
 		$str_users .= "<li $css><a href='$link'>" . __("By all users", 'simple-history') ."</a> | </li>";
+
+		$str_users_select .= sprintf(
+				'<option data-simple-history-filter-user-id="%4$s" value="%3$s" %2$s>%1s</option>', 
+				__("By all users", 'simple-history'), // 1
+				$option_selected, // 2
+				$link, // 3
+				"" // 4
+			);
+
 		foreach ($arr_users as $user_id => $user_info) {
 
 			$user = new WP_User($user_id);
 			if ( ! $user->exists() ) continue;
 
 			$link = esc_html(add_query_arg("simple_history_user_to_show", $user_id));
+			
 			$css = "";
+			$option_selected = "";
+
 			if ($user_id == $simple_history_user_to_show) {
 				$css = " class='selected' ";
+				$option_selected = " selected ";
 			}
+
+			// all users must have username and email
+			$str_user_name = sprintf('%1$s (%2$s)', esc_attr($user->user_login), esc_attr($user->user_email));
+			// if ( ! empty( $user_info["first_name"] )  $user_info["last_name"] );
+
 			$str_users .= "<li $css>";
 			$str_users .= "<a href='$link'>";
-			$str_users .= $user_info["user_nicename"];
+			$str_users .= $str_user_name;
 			$str_users .= "</a> | ";
 			$str_users .= "</li>";
+			
+			$str_users_select .= sprintf(
+				'<option data-simple-history-filter-user-id="%4$s" %2$s value="%1$s">%1$s</option>',
+				$str_user_name, // 1
+				$option_selected, // 2
+				$link, // 3
+				$user_id
+			);
+
 		}
+
 		$str_users .= "</ul>";
 		$str_users = str_replace("| </li></ul>", "</li></ul>", $str_users);
-		echo $str_users;
+
+		$str_users_select .= "</select>";
+
+		if ( ! empty($str_users) ) {
+			// echo $str_users;
+			echo $str_users_select;
+		}
+
 	}
 	
 	// search
@@ -1202,11 +1385,11 @@ function simple_history_get_pagination() {
 			<div class="tablenav-pages">
 				<span class="displaying-num">%1$s</span>
 				<span class="pagination-links">
-					<a class="first-page disabled" title="%5$s" href="#">«</a>
-					<a class="prev-page disabled" title="%6$s" href="#">‹</a>
+					<a class="first-page disabled" title="%5$s" href="#"><span>«</span></a>
+					<a class="prev-page disabled" title="%6$s" href="#"><span>‹</span></a>
 					<span class="paging-input"><input class="current-page" title="%7$s" type="text" name="paged" value="%2$d" size="2"> %8$s <span class="total-pages">%3$d</span></span>
-					<a class="next-page %4$s" title="%9$s" href="#">›</a>
-					<a class="last-page %4$s" title="%10$s" href="#">»</a>
+					<a class="next-page %4$s" title="%9$s" href="#"><span>›</span></a>
+					<a class="last-page %4$s" title="%10$s" href="#"><span>»</span></a>
 				</span>
 			</div>
 		</div>
@@ -1432,6 +1615,7 @@ function simple_history_print_history($args = null) {
 			$action = $one_row->action;
 			$occasions = $one_row->occasions;
 			$num_occasions = sizeof($occasions);
+			$object_image_out = "";
 
 			$css = "";
 			if ("attachment" == $object_type_lcase) {
@@ -1490,7 +1674,15 @@ function simple_history_print_history($args = null) {
 			if ("post" == $object_type_lcase) {
 				
 				$post_out = "";
-				$post_out .= esc_html__(ucfirst($object_subtype));
+				
+				// Get real name for post type (not just the slug for custom post types)
+				$post_type_object = get_post_type_object( $object_subtype );
+				if ( is_null($post_type_object) ) {
+					$post_out .= esc_html__( ucfirst( $object_subtype ) );
+				} else {
+					$post_out .= esc_html__( ucfirst( $post_type_object->labels->singular_name ) );
+				}
+
 				$post = get_post($object_id);
 
 				if (null == $post) {
@@ -1525,24 +1717,72 @@ function simple_history_print_history($args = null) {
 				$post = get_post($object_id);
 				
 				if ($post) {
+
+					// Post for attachment was found
+
 					$title = esc_html(get_the_title($post->ID));
 					$edit_link = get_edit_post_link($object_id, 'display');
-					$attachment_image_src = wp_get_attachment_image_src($object_id, array(50,50), true);
-					$attachment_image = "";
+					$attachment_metadata = wp_get_attachment_metadata( $object_id );
+					$attachment_file = get_attached_file( $object_id );
+					$attachment_mime = get_post_mime_type( $object_id );
+					$attachment_url = wp_get_attachment_url( $object_id );
+
+					// Get attachment thumbnail. 60 x 60 is the same size as the media overview uses
+					// Is thumbnail of object if image, is wp icon if not
+					$attachment_image_src = wp_get_attachment_image_src($object_id, array(60, 60), true);					
 					if ($attachment_image_src) {
-						$attachment_image = "<a class='simple-history-attachment-thumbnail' href='$edit_link'><img src='{$attachment_image_src[0]}' alt='Attachment icon' width='{$attachment_image_src[1]}' height='{$attachment_image_src[2]}' /></a>";
+						$object_image_out .= "<a class='simple-history-attachment-thumbnail' href='$edit_link'><img src='{$attachment_image_src[0]}' alt='Attachment icon' width='{$attachment_image_src[1]}' height='{$attachment_image_src[2]}' /></a>";
 					}
-					$attachment_out .= $attachment_image;
+					
+					// Begin adding nice to have meta info about to attachment (name, size, mime, etc.)					
+					$object_image_out .= "<div class='simple-history-attachment-meta'>";
+
+					// File name
+
+					// Get size in human readable format. Code snippet from media.php
+					$sizes = array( 'KB', 'MB', 'GB' );
+					$attachment_filesize = filesize( $attachment_file );
+					for ( $u = -1; $attachment_filesize > 1024 && $u < count( $sizes ) - 1; $u++ ) {
+						$attachment_filesize /= 1024;
+					}
+
+					// File type
+					$file_type_out = "";
+					if ( preg_match( '/^.*?\.(\w+)$/', $attachment_file, $matches ) )
+						$file_type_out .= esc_html( strtoupper( $matches[1] ) );
+					else
+						$file_type_out .= strtoupper( str_replace( 'image/', '', $post->post_mime_type ) );
+			
+					// Media size, width x height
+					$media_dims = "";
+					if ( ! empty( $attachment_metadata['width'] ) && ! empty( $attachment_metadata['height'] ) ) {
+						$media_dims .= "<span>{$attachment_metadata['width']}&nbsp;&times;&nbsp;{$attachment_metadata['height']}</span>";
+						
+					}
+
+					// Generate string with metainfo
+					$object_image_out .= sprintf('<p>%1$s %2$s</p>', __("File name:"), esc_html( basename( $attachment_file ) ) );;
+					$object_image_out .= sprintf('<p>%1$s %2$s %3$s</p>', __("File size:", "simple-history"), round( $attachment_filesize, 0 ), $sizes[$u] );
+					// $object_image_out .= sprintf('<p>%1$s %2$s</p>', __("File type:"), $file_type_out );
+					if ( ! empty( $media_dims ) ) $object_image_out .= sprintf('<p>%1$s %2$s</p>', __("Dimensions:"), $media_dims );					
+					if ( ! empty( $attachment_metadata["length_formatted"] ) ) $object_image_out .= sprintf('<p>%1$s %2$s</p>', __("Length:"), $attachment_metadata["length_formatted"] );					
+										
+					// end attachment meta info box output
+					$object_image_out .= "</div>"; // close simple-history-attachment-meta
+
 					$attachment_out .= " <a href='$edit_link'>";
 					$attachment_out .= "<span class='simple-history-title'>{$title}</span>";
 					$attachment_out .= "</a>";
 					
 				} else {
+
+					// Post for attachment was not found
 					if ($object_name) {
 						$attachment_out .= "<span class='simple-history-title'>\"" . esc_html($object_name) . "\"</span>";
 					} else {
 						$attachment_out .= " <span class='simple-history-title'>&lt;deleted&gt;</span>";
 					}
+
 				}
 
 				$attachment_out .= " " . esc_html__($action, "simple-history") . " ";
@@ -1579,12 +1819,14 @@ function simple_history_print_history($args = null) {
 					$user_out .= " \"" . esc_html($object_name) . "\"";
 				}
 
+				/*
 				$user_avatar = get_avatar($user->user_email, "50"); 
 				if ($user_link) {
 					$user_out .= "<a class='simple-history-attachment-thumbnail' href='$user_link'>$user_avatar</a>";
 				} else {
 					$user_out .= "<span class='simple-history-attachment-thumbnail' href='$user_link'>$user_avatar</span>";
 				}
+				*/
 
 				$user_out .= " " . esc_html__($action, "simple-history");
 				
@@ -1622,15 +1864,31 @@ function simple_history_print_history($args = null) {
 			}
 			$output .= "</div>";
 			
+			// second div = when and who
 			$output .= "<div class='second'>";
-			// when
+			
 			$date_i18n_date = date_i18n(get_option('date_format'), strtotime($one_row->date), $gmt=false);
 			$date_i18n_time = date_i18n(get_option('time_format'), strtotime($one_row->date), $gmt=false);		
 			$now = strtotime(current_time("mysql"));
 			$diff_str = sprintf( __('<span class="when">%1$s ago</span> by %2$s', "simple-history"), human_time_diff(strtotime($one_row->date), $now), $who );
 			$output .= $diff_str;
 			$output .= "<span class='when_detail'>".sprintf(__('%s at %s', 'simple-history'), $date_i18n_date, $date_i18n_time)."</span>";
+			
 			$output .= "</div>";
+
+			// Object image
+			if ( $object_image_out ) {
+
+				$output .= sprintf(
+					'
+					<div class="simple-history-object-image">
+						%1$s
+					</div>
+					',
+					$object_image_out
+				);
+
+			}
 
 			// occasions
 			if ($num_occasions > 0) {
@@ -1666,7 +1924,7 @@ function simple_history_print_history($args = null) {
 			$output .= "noMoreItems";
 		}
 		
-		if (!$args["is_ajax"]) {
+		if ( ! $args["is_ajax"] ) {
 
 			// if not ajax, print the divs and stuff we need
 			$show_more = "<select>";
@@ -1676,23 +1934,27 @@ function simple_history_print_history($args = null) {
 			$show_more .= sprintf('<option value=100 %2$s>%1$s</option>', __("Show 100 more", 'simple-history'), ($args["items"] == 100 ? " selected " : "") );
 			$show_more .= "</select>";
 
-			$loading = __("Loading...", 'simple-history');
-			$loading =  "<img src='".site_url("wp-admin/images/loading.gif")."' width=16 height=16>" . $loading;
 			$no_found = __("No matching items found.", 'simple-history');
 			$view_rss = __("RSS feed", 'simple-history');
 			$view_rss_link = simple_history_get_rss_address();
 			$str_show = __("Show", 'simple-history');
-			$output .= "</ol>
-			</div>
-			<!--
-			<p class='simple-history-load-more'>$show_more<input type='button' value='$str_show' class='button' /></p>
-			<p class='hidden simple-history-load-more-loading'>$loading</p>
-			-->
-			<p class='hidden simple-history-no-more-items'>$no_found</p>
-			
-			<p class='simple-history-rss-feed-dashboard'><a title='$view_rss' href='$view_rss_link'>$view_rss</a></p>
-			<p class='simple-history-rss-feed-page'><a title='$view_rss' href='$view_rss_link'><span></span>$view_rss</a></p>
+			$output .= "</ol>";
+
+			$output .= sprintf( '
+					<div class="simple-history-loading">%2$s %1$s</div>
+					', 
+					__("Loading...", 'simple-history'), // 1
+					"<img src='".site_url("wp-admin/images/loading.gif")."' width=16 height=16>"
+				);
+
+			$output .= "</div>";
+
+			$output .= "
+				<p class='hidden simple-history-no-more-items'>$no_found</p>			
+				<p class='simple-history-rss-feed-dashboard'><a title='$view_rss' href='$view_rss_link'>$view_rss</a></p>
+				<p class='simple-history-rss-feed-page'><a title='$view_rss' href='$view_rss_link'><span></span>$view_rss</a></p>
 			";
+
 		}
 
 	} else {

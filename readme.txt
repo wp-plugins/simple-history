@@ -1,7 +1,7 @@
 === Simple History ===
 Contributors: eskapism, MarsApril, offereins
 Donate link: http://eskapism.se/sida/donate/
-Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
+Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog
 Requires at least: 3.5.1
 Tested up to: 3.5.1
 Stable tag: 1.1
@@ -16,7 +16,7 @@ The plugin works as a log/history/audit log/version history of the most importan
 
 Out of the box Simple History has support for:
 
-* **Posts and pages - see who added, updated or deleted a post or page
+* **Posts and pages** - see who added, updated or deleted a post or page
 * **Attachments** - see who added, updated or deleted an attachment
 * **Comments** - see who edited, approved or removed a comment
 * **Widgets** - get info when someone adds, updates or removes a widget in a sidebar
@@ -25,6 +25,8 @@ Out of the box Simple History has support for:
 * **User logins** - see when a user login & logut
 * **bbPress** - view changes to forums and topics and view user changes
 * **Gravity Forms** - see who created, edited or deleted a form, field, or entry
+
+With it's easy to use Extender system, developers can add their own settings and items to track.
 
 There is also a **RSS feed of changes** available, so you can keep track of the changes made
 via your favorite RSS reader on your phone, on your iPad, or on your computer.
@@ -91,7 +93,22 @@ add_action("simple_history_allow_db_purge", function($bool) {
 ?>
 `
 
-####  Translations/Languages
+#### Filters
+
+Available filters if you want to modify any behavior
+
+* simple_history_rss_item_title
+* simple_history_view_history_capability
+* simple_history_show_settings_page
+* simple_history_rss_item_description
+* simple_history_rss_item_title
+* simple_history_show_on_dashboard
+* simple_history_show_as_page
+* simple_history_allow_db_purge
+* simple_history_db_purge_days_interval
+
+
+#### Translations/Languages
 
 This plugin is available in the following languages:
 
@@ -103,6 +120,10 @@ This plugin is available in the following languages:
 * Arabic
 
 Lots of thanks to the translators!
+
+#### Contribute at GitHub
+Development of this plugin takes place at GitHub. Please join in with feature requests, bug reports, or even pull requests!
+https://github.com/bonny/WordPress-Simple-History
 
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
@@ -117,9 +138,11 @@ Lots of thanks to the translators!
 Now Simple History will be visible in a submenu under the dashboard main menu. You can also show it directly on the dashboard by modified Simple History's settings page.
 
 == Feedback ==
+
 Like the plugin? Dislike it? Got bugs or feature request?
-Great! Contact me at par.thernstrom@gmail.com or at twitter.com/eskapism and hopefully 
+Great! Contact me at par.thernstrom@gmail.com or at https://twitter.com/eskapism and hopefully 
 I can do something about it.
+
 
 == Screenshots ==
 
@@ -132,10 +155,14 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 4. Widgets can be tracked too!
 
+
 == Changelog ==
 
 = 1.x =
-- Fixed: Plugin name is included when plugin is deactivated. Previosuly only folder name and name of php file was included.
+- Fixed: Plugin name is included when plugins is activated or deactivated. Previosuly only folder name and name of php file was included.
+- Changed: Filters now use dropdowns for type and user. When a site had lots of users and lots of post types, the filter section could be way to big.
+- Added keyboard navigation. Use right and left arrow when you are on Simple History's own page to navigation between next and previous history page.
+- Added loading indicator, so you know it's grabbing your history, even if it's taking a while
 
 = 1.1 =
 - Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins (lmoffereins@gmail.com). Super thanks!
