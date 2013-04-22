@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.1x
+Version: 1.2
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,10 +27,8 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.1");
+define( "SIMPLE_HISTORY_VERSION", "1.2");
 define( "SIMPLE_HISTORY_NAME", "Simple History"); 
-// define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/'); 	// http://playground.ep/wordpress/wp-content/plugins/simple-history/
-// define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
 
 // Find the plugin directory URL
 $aa = __FILE__;
@@ -46,9 +44,6 @@ if ( isset( $plugin ) ) {
 
 $plugin_dir_url = plugin_dir_url(basename($aa)) . basename(dirname(__FILE__)) . '/';
 define("SIMPLE_HISTORY_URL", $plugin_dir_url);
-
-// http://playground-nightly.ep/wordpress/wp-content/plugins/simple-history/
-// sf_d( SIMPLE_HISTORY_URL );
 
 /**
  * Let's begin on a class, since they rule so much more than functions.
