@@ -1,10 +1,10 @@
 === Simple History ===
-Contributors: eskapism, MarsApril
+Contributors: eskapism, MarsApril, offereins
 Donate link: http://eskapism.se/sida/donate/
-Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin
-Requires at least: 3.0
-Tested up to: 3.4.2
-Stable tag: 1.0.7
+Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog
+Requires at least: 3.5.1
+Tested up to: 3.5.1
+Stable tag: 1.2
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -14,12 +14,19 @@ Simple History shows recent changes made within WordPress, directly on your dash
 
 The plugin works as a log/history/audit log/version history of the most important events that occur in WordPress.
 
-For example:
+Out of the box Simple History has support for:
 
-* see what posts and pages that have been created, modified or deleted
-* see what attachments have been uploaded, modified or deleted
-* see what plugins that have been activated or deactivated
-* search through the history/log to find the change/post/article you are looking for
+* **Posts and pages** - see who added, updated or deleted a post or page
+* **Attachments** - see who added, updated or deleted an attachment
+* **Comments** - see who edited, approved or removed a comment
+* **Widgets** - get info when someone adds, updates or removes a widget in a sidebar
+* **Plugins** - activation and deactivation
+* **User profiles** - info about added, updated or removed users
+* **User logins** - see when a user login & logut
+* **bbPress** - view changes to forums and topics and view user changes
+* **Gravity Forms** - see who created, edited or deleted a form, field, or entry
+
+With it's easy to use Extender system, developers can add their own settings and items to track.
 
 There is also a **RSS feed of changes** available, so you can keep track of the changes made
 via your favorite RSS reader on your phone, on your iPad, or on your computer.
@@ -38,24 +45,70 @@ _"The site feels very slow since yesterday. Has anyone done anything special? ..
 that must be it."_
 
 #### See it in action
+
 See the plugin in action with this short screencast:
 [youtube http://www.youtube.com/watch?v=4cu4kooJBzs]
 
 #### Add your own events to simple history
+
 If you are a plugin developer and would like to add your own things/events to Simple History
 you can do that by calling the function simple_history_add like this:
 `<?php
 
-# Will show “Plugin your_plugin_name Edited” in the history log
-simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+# Check that function exists before trying to use it
+# Just in case someone disabled the history plugin or similar
+if (function_exists("simple_history_add")) {
 
-# Will show the history item "Starship USS Enterprise repaired"
-simple_history_add("action=repaired&object_type=Starship&object_name=USS Enterprise");
+	# Log that an email has been sent
+	simple_history_add(array(
+		"object_type" => "Email",
+		"action" => "sent",
+		"object_name" => "Hi there"
+	));
 
+	# Will show “Plugin your_plugin_name Edited” in the history log
+	simple_history_add("action=edited&object_type=plugin&object_name=your_plugin_name");
+	
+	# Will show the history item "Starship USS Enterprise repaired"
+	simple_history_add("action=repaired&object_type=Starship&object_name=USS Enterprise");
+	
 ?>
 `
 
-####  Translations/Languages
+#### Add support for your own custom events
+
+There's also a simple class that you can extend to add support for custom history items. It's super simple to use! Take a look at `class.simple-history-extend.php` to get started, and then extending Simple_History_Extend and fill the required methods with their events and log messages.
+
+#### Never clear the history
+
+By default the items in the history log is cleared automatically afer 60 days. 
+You can override this behaviour by using a filter, like this:
+
+`
+<?php
+// Never clear the database
+add_action("simple_history_allow_db_purge", function($bool) {
+	return false;
+});
+?>
+`
+
+#### Filters
+
+Available filters if you want to modify any behavior
+
+* simple_history_rss_item_title
+* simple_history_view_history_capability
+* simple_history_show_settings_page
+* simple_history_rss_item_description
+* simple_history_rss_item_title
+* simple_history_show_on_dashboard
+* simple_history_show_as_page
+* simple_history_allow_db_purge
+* simple_history_db_purge_days_interval
+
+
+#### Translations/Languages
 
 This plugin is available in the following languages:
 
@@ -63,6 +116,14 @@ This plugin is available in the following languages:
 * German
 * Simplified Chinese
 * Swedish
+* French
+* Arabic
+
+Lots of thanks to the translators!
+
+#### Contribute at GitHub
+Development of this plugin takes place at GitHub. Please join in with feature requests, bug reports, or even pull requests!
+https://github.com/bonny/WordPress-Simple-History
 
 #### Donation and more plugins
 * If you like this plugin don't forget to [donate to support further development](http://eskapism.se/sida/donate/).
@@ -77,9 +138,11 @@ This plugin is available in the following languages:
 Now Simple History will be visible in a submenu under the dashboard main menu. You can also show it directly on the dashboard by modified Simple History's settings page.
 
 == Feedback ==
+
 Like the plugin? Dislike it? Got bugs or feature request?
-Great! Contact me at par.thernstrom@gmail.com or at twitter.com/eskapism and hopefully 
+Great! Contact me at par.thernstrom@gmail.com or at https://twitter.com/eskapism and hopefully 
 I can do something about it.
+
 
 == Screenshots ==
 
@@ -90,7 +153,37 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 3. The RSS feed with changes, as shown in Firefox.
 
+4. Widgets can be tracked too!
+
+
 == Changelog ==
+
+= 1.2 =
+- Fixed: Plugin name is included when plugins is activated or deactivated. Previosuly only folder name and name of php file was included.
+- Added: Attachment thumbnails are now visible if history item is an attachment. Also includes some metadata.
+- Changed: Filters now use dropdowns for type and user. When a site had lots of users and lots of post types, the filter section could be way to big.
+- Added keyboard navigation. Use right and left arrow when you are on Simple History's own page to navigation between next and previous history page.
+- Added loading indicator, so you know it's grabbing your history, even if it's taking a while
+- Misc JS and CSS fixes
+- Arabic translation updated
+- POT-file updated
+
+= 1.1 =
+- Added the Simple History Extender-module/plugin. With this great addon to Simple History it is very easy for other developers to add their own actions to simple history, including a settings panel to check actions on/off. All work on this module was made by Laurens Offereins (lmoffereins@gmail.com). Super thanks!
+- With the help of Simple History Extender this plugin also tracks changes made in bbPress, Gravity Forms and in Widges. Awesome!
+- Added user email to RSS feed + some other small changed to make it compatible with IFTTT.com. Thanks to phoenixMagoo for the code changes. Fixes http://wordpress.org/support/topic/suggestions-a-couple-of-tweaks-to-the-rss-feed.
+- Added two filters for the RSS feed: simple_history_rss_item_title and simple_history_rss_item_description.
+- Changed the way the plugin directory was determined. Perhaps and hopefully this fixes some problems with multi site and plugin in different locations and stuff like that
+- Style fixes for RTL languages
+- Small fixes here and there, for example changing deprecated WordPress functions to not deprecated
+- Added new filter: simple_history_db_purge_days_interval. Hook it to change default clear interval of 60 days.
+
+= 1.0.9 =
+- Added French translation
+
+= 1.0.8 =
+- Added: filter simple_history_allow_db_purge that is used to determine if the history should be purged/cleaned after 60 days or not. Return false and it will never be cleaned.
+- Fixed: fixed a security issue with the RSS feed. User who should not be able to view the feed could get access to it. Please update to this version to keep your change log private!
 
 = 1.0.7 =
 - Fixed: Used a PHP shorthand opening tag at a place. Sorry!
@@ -233,3 +326,5 @@ by admin (John Doe), just now
 
 = 0.1 =
 * First public version. It works!
+
+
