@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.1x
+Version: 1.3
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,10 +27,8 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.1");
-define( "SIMPLE_HISTORY_NAME", "Simple History"); 
-// define( "SIMPLE_HISTORY_URL", WP_PLUGIN_URL . '/simple-history/'); 	// http://playground.ep/wordpress/wp-content/plugins/simple-history/
-// define( "SIMPLE_HISTORY_URL", plugins_url() . '/simple-history/'); 		// http://playground.ep/wordpress/wp-content/plugins/simple-history/
+define( "SIMPLE_HISTORY_VERSION", "1.3");
+define( "SIMPLE_HISTORY_NAME", "Simple History");
 
 // Find the plugin directory URL
 $aa = __FILE__;
@@ -46,9 +44,6 @@ if ( isset( $plugin ) ) {
 
 $plugin_dir_url = plugin_dir_url(basename($aa)) . basename(dirname(__FILE__)) . '/';
 define("SIMPLE_HISTORY_URL", $plugin_dir_url);
-
-// http://playground-nightly.ep/wordpress/wp-content/plugins/simple-history/
-// sf_d( SIMPLE_HISTORY_URL );
 
 /**
  * Let's begin on a class, since they rule so much more than functions.
@@ -254,10 +249,13 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 
 		// DB version is 1, upgrade to 2
 		if ( 1 == intval($db_version) ) {
-			
-			// Add column for free text
-			// require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			// update_option("simple_history_db_version", 2);
+
+			// Add column for action description in non-translateable free text
+			$sql = "ALTER TABLE {$table_name} ADD COLUMN action_description longtext";
+			mysql_query($sql);
+
+			simple_history_add("action=" . 'upgraded it\'s database' . "&object_type=plugin&object_name=" . SIMPLE_HISTORY_NAME . "&description=Database version is now version 2");
+			update_option("simple_history_db_version", 2);
 
 		}
 		
@@ -306,11 +304,51 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 	
 	}
 
+	/**
+	 * Log failed login attempt to username that exists
+	 */
+	function log_wp_authenticate_user($user, $password) {
+
+		if ( ! wp_check_password($password, $user->user_pass, $user->ID) ) {
+			
+			// call __() to make translation exist
+			__("failed to log in because they entered the wrong password", "simple-history");
+
+			$description = "";
+			$description .= "HTTP_USER_AGENT: " . $_SERVER["HTTP_USER_AGENT"];
+			$description .= "\nHTTP_REFERER: " . $_SERVER["HTTP_REFERER"];
+			$description .= "\nREMOTE_ADDR: " . $_SERVER["REMOTE_ADDR"];
+
+			$args = array(
+						"object_type" => "user",
+						"object_name" => $user->user_login,
+						"action" => "failed to log in because they entered the wrong password",
+						"object_id" => $user->ID,
+						"description" => $description
+					);
+			
+			simple_history_add($args);
+
+		}
+
+		return $user;
+
+	}
+
+	/**
+	 * Init for both public and admin
+	 */
 	function init() {
 	
-		// users and stuff
+		// user login and logout
 		add_action("wp_login", "simple_history_wp_login");
 		add_action("wp_logout", "simple_history_wp_logout");
+
+		// user failed login attempt to username that exists
+		#$user = apply_filters('wp_authenticate_user', $user, $password);
+		add_action("wp_authenticate_user", array($this, "log_wp_authenticate_user"), 10, 2);
+
+		// user profile page modifications
 		add_action("delete_user", "simple_history_delete_user");
 		add_action("user_register", "simple_history_user_register");
 		add_action("profile_update", "simple_history_profile_update");
@@ -445,7 +483,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 			if ( ! $user_obj->exists() ) exit;
 			$user = $user_obj->user_login;
 		};
-	
+
 		// page to show. 1 = first page.
 		$page = 0;
 		if (isset($_POST["page"])) {
@@ -951,16 +989,18 @@ function simple_history_add($args) {
 		"object_id" => null,
 		"object_name" => null,
 		"user_id" => null,
+		"description" => null
 	);
 
 	$args = wp_parse_args( $args, $defaults );
 
 	$action = mysql_real_escape_string($args["action"]);
-	$object_type = $args["object_type"];
-	$object_subtype = $args["object_subtype"];
-	$object_id = $args["object_id"];
+	$object_type = mysql_real_escape_string($args["object_type"]);
+	$object_subtype = mysql_real_escape_string($args["object_subtype"]);
+	$object_id = mysql_real_escape_string($args["object_id"]);
 	$object_name = mysql_real_escape_string($args["object_name"]);
 	$user_id = $args["user_id"];
+	$description = mysql_real_escape_string($args["description"]);
 
 	global $wpdb;
 	$tableprefix = $wpdb->prefix;
@@ -970,14 +1010,25 @@ function simple_history_add($args) {
 		$current_user = wp_get_current_user();
 		$current_user_id = (int) $current_user->ID;
 	}
-	
+
 	// date, store at utc or local time
 	// anything is better than now() anyway!
 	// WP seems to use the local time, so I will go with that too I think
 	// GMT/UTC-time is: date_i18n($timezone_format, false, 'gmt')); 
 	// local time is: date_i18n($timezone_format));
 	$localtime = current_time("mysql");
-	$sql = "INSERT INTO {$tableprefix}simple_history SET date = '$localtime', action = '$action', object_type = '$object_type', object_subtype = '$object_subtype', user_id = '$current_user_id', object_id = '$object_id', object_name = '$object_name'";
+	$sql = "
+		INSERT INTO {$tableprefix}simple_history 
+		SET 
+			date = '$localtime', 
+			action = '$action', 
+			object_type = '$object_type', 
+			object_subtype = '$object_subtype', 
+			user_id = '$current_user_id', 
+			object_id = '$object_id', 
+			object_name = '$object_name',
+			action_description = '$description'
+		";
 	$wpdb->query($sql);
 }
 
@@ -1519,6 +1570,8 @@ function simple_history_get_items_array($args = "") {
 						$do_add = TRUE;
 					} else if (strpos(strtolower($one_row->action), $search) !== FALSE) {
 						$do_add = TRUE;
+					} else if (strpos(strtolower($one_row->action_description), $search) !== FALSE) {
+						$do_add = TRUE;
 					}
 		        } else {
 			        $do_add = TRUE;
@@ -1583,6 +1636,7 @@ function simple_history_print_history($args = null) {
 	global $simple_history;
 	
 	$arr_events = simple_history_get_items_array($args);
+	#sf_d($arr_events);
 	#sf_d($args);sf_d($arr_events);
 	$defaults = array(
 		"page" => 0,
@@ -1613,6 +1667,7 @@ function simple_history_print_history($args = null) {
 			$object_name = $one_row->object_name;
 			$user_id = $one_row->user_id;
 			$action = $one_row->action;
+			$action_description = $one_row->action_description;
 			$occasions = $one_row->occasions;
 			$num_occasions = sizeof($occasions);
 			$object_image_out = "";
@@ -1819,15 +1874,6 @@ function simple_history_print_history($args = null) {
 					$user_out .= " \"" . esc_html($object_name) . "\"";
 				}
 
-				/*
-				$user_avatar = get_avatar($user->user_email, "50"); 
-				if ($user_link) {
-					$user_out .= "<a class='simple-history-attachment-thumbnail' href='$user_link'>$user_avatar</a>";
-				} else {
-					$user_out .= "<span class='simple-history-attachment-thumbnail' href='$user_link'>$user_avatar</span>";
-				}
-				*/
-
 				$user_out .= " " . esc_html__($action, "simple-history");
 				
 				$user_out = ucfirst($user_out);
@@ -1873,6 +1919,20 @@ function simple_history_print_history($args = null) {
 			$diff_str = sprintf( __('<span class="when">%1$s ago</span> by %2$s', "simple-history"), human_time_diff(strtotime($one_row->date), $now), $who );
 			$output .= $diff_str;
 			$output .= "<span class='when_detail'>".sprintf(__('%s at %s', 'simple-history'), $date_i18n_date, $date_i18n_time)."</span>";
+
+			// action description
+			if ( trim( $action_description ) )  {
+				$output .= sprintf(
+					'
+					<a href="#" class="simple-history-item-description-toggler">%2$s</a>
+					<div class="simple-history-item-description-wrap">
+						<div class="simple-history-action-description">%1$s</div>
+					</div>
+					',
+					nl2br( esc_attr( $action_description ) ), // 2
+					__("Details", "simple-history") // 2
+				);
+			}
 			
 			$output .= "</div>";
 
@@ -1900,16 +1960,42 @@ function simple_history_print_history($args = null) {
 					$many_occasion = sprintf(__("+ %d occasions", 'simple-history'), $num_occasions);
 					$output .= "<a class='simple-history-occasion-show' href='#'>$many_occasion</a>";
 				}
+				
 				$output .= "<ul class='simple-history-occasions hidden'>";
 				foreach ($occasions as $one_occasion) {
+				
 					$output .= "<li>";
+				
 					$date_i18n_date = date_i18n(get_option('date_format'), strtotime($one_occasion->date), $gmt=false);
 					$date_i18n_time = date_i18n(get_option('time_format'), strtotime($one_occasion->date), $gmt=false);		
-					$output .= sprintf( __('%s ago (%s at %s)', "simple-history"), human_time_diff(strtotime($one_occasion->date), $now), $date_i18n_date, $date_i18n_time );
+				
+					$output .= "<div class='simple-history-occasions-one-when'>";
+					$output .= sprintf(
+							__('%s ago (%s at %s)', "simple-history"), 
+							human_time_diff(strtotime($one_occasion->date), $now), 
+							$date_i18n_date, 
+							$date_i18n_time
+						);
+					
+					if ( trim( $one_occasion->action_description ) )  {
+						$output .= "<a href='#' class='simple-history-occasions-details-toggle'>" . __("Details", "simple-history") . "</a>";
+					}
+					
+					$output .= "</div>";
+
+					if ( trim( $one_occasion->action_description ) )  {
+						$output .= sprintf(
+							'<div class="simple-history-occasions-one-action-description">%1$s</div>',
+							nl2br( esc_attr( $one_occasion->action_description ) )
+						);
+					}
+
 
 					$output .= "</li>";
 				}
+
 				$output .= "</ul>";
+
 				$output .= "</div>";
 			}
 
@@ -1950,7 +2036,7 @@ function simple_history_print_history($args = null) {
 			$output .= "</div>";
 
 			$output .= "
-				<p class='hidden simple-history-no-more-items'>$no_found</p>			
+				<p class='simple-history-no-more-items'>$no_found</p>			
 				<p class='simple-history-rss-feed-dashboard'><a title='$view_rss' href='$view_rss_link'>$view_rss</a></p>
 				<p class='simple-history-rss-feed-page'><a title='$view_rss' href='$view_rss_link'><span></span>$view_rss</a></p>
 			";
