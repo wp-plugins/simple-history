@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.3
+Version: 1.3.1
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.3");
+define( "SIMPLE_HISTORY_VERSION", "1.3.1");
 define( "SIMPLE_HISTORY_NAME", "Simple History");
 
 // Find the plugin directory URL
@@ -228,6 +228,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 			  user_id int(10) NOT NULL,
 			  object_id int(10) NOT NULL,
 			  object_name VARCHAR(256) NOT NULL COLLATE utf8_general_ci,
+			  action_description longtext,
 			  PRIMARY KEY  (id)
 			) CHARACTER SET=utf8;";
 
@@ -1124,6 +1125,7 @@ function simple_history_install() {
 		  user_id int(10) NOT NULL,
 		  object_id int(10) NOT NULL,
 		  object_name varchar(255) NOT NULL COLLATE utf8_general_ci,
+		  action_description longtext,
 		  PRIMARY KEY  (id)
 		) CHARACTER SET=utf8;";
 
