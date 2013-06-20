@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog
 Requires at least: 3.5.1
 Tested up to: 3.5.1
-Stable tag: 1.2
+Stable tag: 1.3.2
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -16,15 +16,26 @@ The plugin works as a log/history/audit log/version history of the most importan
 
 Out of the box Simple History has support for:
 
-* **Posts and pages** - see who added, updated or deleted a post or page
-* **Attachments** - see who added, updated or deleted an attachment
-* **Comments** - see who edited, approved or removed a comment
-* **Widgets** - get info when someone adds, updates or removes a widget in a sidebar
-* **Plugins** - activation and deactivation
-* **User profiles** - info about added, updated or removed users
-* **User logins** - see when a user login & logut
-* **bbPress** - view changes to forums and topics and view user changes
-* **Gravity Forms** - see who created, edited or deleted a form, field, or entry
+* **Posts and pages**<br>
+see who added, updated or deleted a post or page
+* **Attachments**<br>
+see who added, updated or deleted an attachment
+* **Comments**<br>
+see who edited, approved or removed a comment
+* **Widgets**<br>
+get info when someone adds, updates or removes a widget in a sidebar
+* **Plugins**<br>
+activation and deactivation
+* **User profiles**<br>
+info about added, updated or removed users
+* **User logins**<br>
+see when a user login & logut
+* **Failed user logins**<br>
+see when someone has tried to log in, but failed. The log will then include ip address of the possible hacker.
+* **bbPress**<br>
+view changes to forums and topics and view user changes
+* **Gravity Forms**<br>
+see who created, edited or deleted a form, field, or entry
 
 With it's easy to use Extender system, developers can add their own settings and items to track.
 
@@ -62,8 +73,8 @@ if (function_exists("simple_history_add")) {
 	# Log that an email has been sent
 	simple_history_add(array(
 		"object_type" => "Email",
-		"action" => "sent",
-		"object_name" => "Hi there"
+		"object_name" => "Hi there",
+		"action" => "was sent"
 	));
 
 	# Will show “Plugin your_plugin_name Edited” in the history log
@@ -71,7 +82,15 @@ if (function_exists("simple_history_add")) {
 	
 	# Will show the history item "Starship USS Enterprise repaired"
 	simple_history_add("action=repaired&object_type=Starship&object_name=USS Enterprise");
-	
+
+	# Log with some extra details about the email
+	simple_history_add(array(
+		"object_type" => "Email",
+		"object_name" => "Hi there",
+		"action" => "was sent",
+		"description" => "The database query to generate the email took .3 seconds. This is email number 4 that is sent to this user"
+	));
+
 ?>
 `
 
@@ -146,17 +165,30 @@ I can do something about it.
 
 == Screenshots ==
 
-1. Simple History showing som recent changes to my posts, users and attachments.
+1. Simple History showing som recent changes to my posts, users and attachments. Also showing several failed login attempts to one of my users.
 
 2. Simple History settings. Choose to show the plugin on your dashboard, or as a separately page. Or both. Or none, since you can choose
 to only use the secret RSS feed to keep track of the changes on you web site/WordPress installation.
 
 3. The RSS feed with changes, as shown in Firefox.
 
-4. Widgets can be tracked too!
-
 
 == Changelog ==
+
+= 1.3.2 =
+- Could get php notice warning if rss secret was not set. Also: make sure both public and private secret exists.
+
+= 1.3.1 =
+- Improved contrast for details view
+- Fix sql error on installation due to missing column
+- Remove options and database table during removal of plugin
+- Added: German translation for extender module
+
+= 1.3 =
+- Added: history events can store text description with a more detailed explanation of the history item
+- Added: now logs failed login attempts for existing username. Uses the new text description to store more info, for example user agent and remote ip address (REMOTE_ADDR)
+- Fixed: box did not change height when clicking on occasions
+- Fixed: use on() instead of live() in JavaScript
 
 = 1.2 =
 - Fixed: Plugin name is included when plugins is activated or deactivated. Previosuly only folder name and name of php file was included.
