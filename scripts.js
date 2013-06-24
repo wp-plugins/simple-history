@@ -18,11 +18,17 @@ var simple_history = (function($) {
 		elms.ol_wrapper = elms.wrap.find(".simple-history-ol-wrapper");
 
 		// so wrapper does not collapse when loading new items
-		elms.ol_wrapper.height( elms.ol_wrapper.height() );
+		//elms.ol_wrapper.height( elms.ol_wrapper.height() );
+		elms.ol_wrapper.css("max-height", elms.ol_wrapper.height() );
 
 		addListeners();
 
 		elms.wrap.addClass("simple-history-is-ready simple-history-has-items");
+
+	}
+
+	function make_wrapper_expandable() {
+		elms.ol_wrapper.css("max-height", "1000px");
 	}
 
 	function addListeners() {
@@ -57,9 +63,30 @@ var simple_history = (function($) {
 		}
 
 		// show occasions
-		$("a.simple-history-occasion-show").live("click", function(e) {
-			$(this).closest("li").find("ul.simple-history-occasions").toggle("fast");
+		$(document).on("click", "a.simple-history-occasion-show", function(e) {
+
+			$(this).closest("li").find("ul.simple-history-occasions").toggle();
+
+			make_wrapper_expandable();
+
 			e.preventDefault();
+
+		});
+
+		// show details for main entry
+		$(document).on("click", ".simple-history-item-description-toggler", function(e) {
+			e.preventDefault();
+			var self = $(this);
+			make_wrapper_expandable();
+			self.closest("li").toggleClass("simple-history-item-description-wrap-is-open");
+		});
+
+		// show details for occasions
+		$(document).on("click", ".simple-history-occasions-details-toggle", function(e) {
+			e.preventDefault();
+			var self = $(this);
+			make_wrapper_expandable();
+			self.closest("li").toggleClass("simple-history-occasions-one-description-is-open");
 		});
 
 
@@ -115,7 +142,8 @@ jQuery(document).on("keyup", ".simple-history-filter-search input[type='text'], 
 
 // click on filter-link/change value is filter dropdowns = load new via ajax
 // begin at position 0 unless click on pagination then check pagination page
-jQuery("select.simple-history-filter, .simple-history-filter a, .simple-history-filter input[type='button'], .simple-history-tablenav a").live("click change", function(e, extraParams) {
+//jQuery("select.simple-history-filter, .simple-history-filter a, .simple-history-filter input[type='button'], .simple-history-tablenav a").live("click change", function(e, extraParams) {
+jQuery(document).on("click change", "select.simple-history-filter, .simple-history-filter a, .simple-history-filter input[type='button'], .simple-history-tablenav a", function(e, extraParams) {
 
 	var $t = jQuery(this),
 		$ol = jQuery("ol.simple-history"),
@@ -190,12 +218,13 @@ jQuery("select.simple-history-filter, .simple-history-filter a, .simple-history-
 	}
 
 	simple_history_jqXHR = jQuery.post(ajaxurl, data, function(data, textStatus, XMLHttpRequest){
-		
+
 		// If no more can be loaded show message about that
 		if (data.error == "noMoreItems") {
-			
+
 			jQuery(".simple-history-ol-wrapper").height("auto");
 			$simple_history_wrap.removeClass("simple-history-has-items simple-history-is-loading");
+			$simple_history_wrap.addClass("simple-history-no-items-found");
 
 			$displaying_num.html(0);
 			$total_pages.text(1);
@@ -203,6 +232,7 @@ jQuery("select.simple-history-filter, .simple-history-filter a, .simple-history-
 		} else {
 
 			// Items found, add and show
+			$simple_history_wrap.removeClass("simple-history-is-loading simple-history-no-items-found");
 
 			// update number of existing items and total pages
 			$displaying_num.html(data.filtered_items_total_count_string);
@@ -211,7 +241,8 @@ jQuery("select.simple-history-filter, .simple-history-filter a, .simple-history-
 			$ol.html(data.items_li);
 
 			// set wrapper to the height required to show items
-			$wrapper.height( $ol.height() );
+			//$wrapper.height( $ol.height() );
+			$wrapper.css( "max-height", $ol.height() );
 			$simple_history_wrap.removeClass("simple-history-is-loading");
 
 		}
