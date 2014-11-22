@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, stream, pages, attachments, users, cms, dashboard, admin, syslog, activity
 Requires at least: 3.8.0
 Tested up to: 4.0
-Stable tag: 1.3.10
+Stable tag: 1.3.11
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -174,6 +174,11 @@ to only use the secret RSS feed to keep track of the changes on you web site/Wor
 
 
 == Changelog ==
+
+= 1.3.11 =
+- Don't use deprecated function get_commentdata(). Fixes https://wordpress.org/support/topic/get_commentdata-function-is-deprecated.
+- Don't use mysql_query() directly. Fixes https://wordpress.org/support/topic/deprecated-mysql-warning.
+- Beta testers wanted! I'm working on the next version of Simple History and now I need some beta testers. If you want to try out the shiny new and cool version please download the [v2 branch](https://github.com/bonny/WordPress-Simple-History/tree/v2) over at GitHub. Thanks!
 
 = 1.3.10 =
 - Fix: correct usage of "its"

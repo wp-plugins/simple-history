@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://eskapism.se/code-playground/simple-history/
 Description: Get a log/history/audit log/version history of the changes made by users in WordPress.
-Version: 1.3.10
+Version: 1.3.11
 Author: Pär Thernström
 Author URI: http://eskapism.se/
 License: GPL2
@@ -27,7 +27,7 @@ License: GPL2
 
 load_plugin_textdomain('simple-history', false, "/simple-history/languages");
 
-define( "SIMPLE_HISTORY_VERSION", "1.3.10");
+define( "SIMPLE_HISTORY_VERSION", "1.3.11");
 define( "SIMPLE_HISTORY_NAME", "Simple History");
 
 // Find the plugin directory URL
@@ -258,7 +258,7 @@ define("SIMPLE_HISTORY_URL", $plugin_dir_url);
 
 			// Add column for action description in non-translateable free text
 			$sql = "ALTER TABLE {$table_name} ADD COLUMN action_description longtext";
-			mysql_query($sql);
+			$wpdb->query($sql);
 
 			simple_history_add("action=" . 'upgraded its database' . "&object_type=plugin&object_name=" . SIMPLE_HISTORY_NAME . "&description=Database version is now version 2");
 			update_option("simple_history_db_version", 2);
@@ -782,7 +782,7 @@ function simple_history_deactivated_plugin($plugin_name) {
 
 function simple_history_edit_comment($comment_id) {
 	
-	$comment_data = get_commentdata($comment_id, 0, true);
+	$comment_data = get_comment($comment_id, ARRAY_A);
 	$comment_post_ID = $comment_data["comment_post_ID"];
 	$post = get_post($comment_post_ID);
 	$post_title = get_the_title($comment_post_ID);
@@ -798,7 +798,7 @@ function simple_history_edit_comment($comment_id) {
 
 function simple_history_delete_comment($comment_id) {
 	
-	$comment_data = get_commentdata($comment_id, 0, true);
+	$comment_data = get_comment($comment_id, ARRAY_A);
 	$comment_post_ID = $comment_data["comment_post_ID"];
 	$post = get_post($comment_post_ID);
 	$post_title = get_the_title($comment_post_ID);
@@ -815,7 +815,7 @@ function simple_history_delete_comment($comment_id) {
 function simple_history_set_comment_status($comment_id, $new_status) {
 	#echo "<br>new status: $new_status<br>"; // 0
 	// $new_status hold (unapproved), approve, spam, trash
-	$comment_data = get_commentdata($comment_id, 0, true);
+	$comment_data = get_comment($comment_id, ARRAY_A);
 	$comment_post_ID = $comment_data["comment_post_ID"];
 	$post = get_post($comment_post_ID);
 	$post_title = get_the_title($comment_post_ID);
