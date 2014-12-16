@@ -71,7 +71,7 @@ if ( function_exists("SimpleLogger") ) {
     SimpleLogger()->debug("Ok, cron job is running!");
 
 }
-
+?>
 `
 
 #### Translations/Languages
