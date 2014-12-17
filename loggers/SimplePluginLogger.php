@@ -98,7 +98,7 @@ class SimplePluginLogger extends SimpleLogger
 
 				// bulk versions
 				'plugin_bulk_updated' => _x(
-					'Updated plugin "{plugin_name}" from {plugin_prev_version} to {plugin_version}', 
+					'Updated plugin "{plugin_name}" to {plugin_version} from {plugin_prev_version}', 
 					'Plugin was updated in bulk',
 					'simple-history'
 				),
