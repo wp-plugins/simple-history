@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.1
-Stable tag: 2.0.4
+Stable tag: 2.0.5
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -103,6 +103,12 @@ initiated by a specific user.
 
 
 == Changelog ==
+
+= 2.0.5 (November 2014) =
+
+- Fix undefined variable in plugin logger. Fixes https://wordpress.org/support/topic/simple-history-201-is-not-working?replies=8#post-6343684.
+- Made the dashboard smaller
+- Misc other small GUI changes
 
 = 2.0.4 (November 2014) =
 
