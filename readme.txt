@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.1
-Stable tag: 2.0.6
+Stable tag: 2.0.7
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -104,10 +104,15 @@ initiated by a specific user.
 
 == Changelog ==
 
+= 2.0.7 (December 2014) =
+
+- Fix: no message when restoring page from trash
+- Fix: use correct width for media attachment
+- Add: filter `simple_history/logrowhtmloutput/classes`, to modify HTML classes added to each log row item
+
 = 2.0.6 (November 2014) =
 
-- Added: [WordPress 4.1 added the feature to log out a user from all their sessions](http://codex.wordpress.org/Version_4.1#Users). Simple History now logs when a user is logged out from all their sessions except the current browser, or if an admin destroys all sessions for a user.  
-![Screenshot of new session logout log item](https://dl.dropboxusercontent.com/s/k4cmfmncekmfiib/2014-12-simple-history-changelog-user-sessions.png)
+- Added: [WordPress 4.1 added the feature to log out a user from all their sessions](http://codex.wordpress.org/Version_4.1#Users). Simple History now logs when a user is logged out from all their sessions except the current browser, or if an admin destroys all sessions for a user. [View screenshot of new session logout log item](https://dl.dropboxusercontent.com/s/k4cmfmncekmfiib/2014-12-simple-history-changelog-user-sessions.png)
 
 - Added: filter to shortcut loading of a dropin. Example that completely skips loading the RSS-feed-dropin:
 `add_filter("simple_history/dropin/load_dropin_SimpleHistoryRSSDropin", "__return_false");`
@@ -150,6 +155,25 @@ I've spend hundreds of hours making this update, so if you use it and like it pl
 - Features as plugins: more things are moved into modules/its own file
 - Users see different logs depending on their capability, for example an administrator will see what plugins have been installed, but an editor will not see any plugin related logs
 - Much much more.
+
+= 1.3.11 =
+- Don't use deprecated function get_commentdata(). Fixes https://wordpress.org/support/topic/get_commentdata-function-is-deprecated.
+- Don't use mysql_query() directly. Fixes https://wordpress.org/support/topic/deprecated-mysql-warning.
+- Beta testers wanted! I'm working on the next version of Simple History and now I need some beta testers. If you want to try out the shiny new and cool version please download the [v2 branch](https://github.com/bonny/WordPress-Simple-History/tree/v2) over at GitHub. Thanks!
+
+= 1.3.10 =
+- Fix: correct usage of "its"
+- Fix: removed serif font in log. Fixes https://wordpress.org/support/topic/two-irritations-and-pleas-for-change.
+
+= 1.3.9 =
+- Fixed strict standards warning
+- Tested on WordPress 4.0
+
+= 1.3.8 =
+- Added filter for rss feed: `simple_history/rss_feed_show`. Fixes more things in this thread: http://wordpress.org/support/topic/more-rss-feed-items.
+ 
+= 1.3.7 =
+- Added filter for rss feed: `simple_history/rss_feed_args`. Fixes http://wordpress.org/support/topic/more-rss-feed-items.
 
 = 1.3.6 =
 - Added Polish translation

@@ -6,7 +6,7 @@
 class SimpleHistory {
 
 	const NAME = "Simple History";
-	const VERSION = "2.0.6";
+	const VERSION = "2.0.7";
 
 	/**
 	 * Capability required to view the history log
@@ -1729,9 +1729,15 @@ class SimpleHistory {
 
 		}
 
-		$class_sender = "";
-		if (isset($oneLogRow->initiator) && !empty($oneLogRow->initiator)) {
-			$class_sender .= "SimpleHistoryLogitem--initiator-" . esc_attr($oneLogRow->initiator);
+		// Classes to add to log item li element
+		$classes = array(
+			"SimpleHistoryLogitem",
+			"SimpleHistoryLogitem--loglevel-{$oneLogRow->level}",
+			"SimpleHistoryLogitem--logger-{$oneLogRow->logger}"
+		);
+
+		if ( isset( $oneLogRow->initiator ) && ! empty( $oneLogRow->initiator ) ) {
+			$classes[] = "SimpleHistoryLogitem--initiator-" . esc_attr($oneLogRow->initiator);
 		}
 
 		/*$level_html = sprintf(
@@ -1747,10 +1753,19 @@ class SimpleHistory {
 
 		$plain_text_html .= $log_level_tag_html;
 
+		/**
+	     * Filter to modify classes added to item li element
+	     *
+	     * @since 2.0.7
+	     *
+	     * @param $classes Array with classes
+	     */
+		$classes = apply_filters("simple_history/logrowhtmloutput/classes", $classes);
+
 		// Generate the HTML output for a row
 		$output = sprintf(
 			'
-				<li %8$s class="SimpleHistoryLogitem SimpleHistoryLogitem--loglevel-%5$s SimpleHistoryLogitem--logger-%7$s %10$s">
+				<li %8$s class="%10$s">
 					<div class="SimpleHistoryLogitem__firstcol">
 						<div class="SimpleHistoryLogitem__senderImage">%3$s</div>
 					</div>
@@ -1772,7 +1787,7 @@ class SimpleHistory {
 			$oneLogRow->logger, // 7
 			$data_attrs, // 8 data attributes
 			$more_details_html, // 9
-			$class_sender // 10
+			join(" ", $classes) // 10
 		);
 
 		// Get the main message row.
