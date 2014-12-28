@@ -6,7 +6,7 @@
 class SimpleHistory {
 
 	const NAME = "Simple History";
-	const VERSION = "2.0.7";
+	const VERSION = "2.0.8";
 
 	/**
 	 * Capability required to view the history log
@@ -87,6 +87,7 @@ class SimpleHistory {
 		add_action( 'admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
 
 		add_action( 'admin_head', array( $this, "onAdminHead" ) );
+		add_action( 'admin_footer', array( $this, "onAdminFooter" ) );
 
 		// Filters and actions not called during regular boot
 		add_filter("gettext", array($this, 'filter_gettext'), 20, 3);
@@ -150,6 +151,16 @@ class SimpleHistory {
 
 	}
 
+	public function onAdminFooter() {
+
+		if ( $this->is_on_our_own_pages() ) {
+			
+			do_action( "simple_history/admin_footer", $this );
+
+		}
+
+	}
+
 	/**
 	 * Output JS templated into footer
 	 */
@@ -184,34 +195,34 @@ class SimpleHistory {
 				<!-- this uses the (almost) the same html as WP does -->
 				<div class="SimpleHistoryPaginationPages">
 					<!-- 
-					<%= page_rows_from %>–<%= page_rows_to %> 
-					<span class="SimpleHistoryPaginationDisplayNum"> of <%= total_row_count %></span>
+					{{ data.page_rows_from }}–{{ data.page_rows_to }} 
+					<span class="SimpleHistoryPaginationDisplayNum"> of {{ data.total_row_count }} </span>
 					-->
 					<span class="SimpleHistoryPaginationLinks">
 						<a 	
 							data-direction="first" 
-							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--firstPage <% if ( api_args.paged <= 1 ) { %> disabled <% } %>" 
-							title="<%= strings.goToTheFirstPage %>" 
+							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--firstPage <# if ( data.api_args.paged <= 1 ) { #> disabled <# } #>" 
+							title="{{ data.strings.goToTheFirstPage }}" 
 							href="#">«</a>
 						<a 
 							data-direction="prev" 
-							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--prevPage <% if ( api_args.paged <= 1 ) { %> disabled <% } %>" 
-							title="<%= strings.goToThePrevPage %>"
+							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--prevPage <# if ( data.api_args.paged <= 1 ) { #> disabled <# } #>" 
+							title="{{ data.strings.goToThePrevPage }}"
 							href="#">‹</a>
 						<span class="SimpleHistoryPaginationInput">
-							<input class="SimpleHistoryPaginationCurrentPage" title="<%= strings.currentPage %>" type="text" name="paged" value="<%= api_args.paged %>" size="4">
+							<input class="SimpleHistoryPaginationCurrentPage" title="{{ data.strings.currentPage }}" type="text" name="paged" value="{{ data.api_args.paged }}" size="4">
 							<?php _x("of", "page n of n", "simple-history") ?>
-							<span class="total-pages"><%= pages_count %></span>
+							<span class="total-pages">{{ data.pages_count }}</span>
 						</span>
 						<a 
 							data-direction="next" 
-							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--nextPage <% if ( api_args.paged >= pages_count ) { %> disabled <% } %>" 
-							title="<%= strings.goToTheNextPage %>"
+							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--nextPage <# if ( data.api_args.paged >= data.pages_count ) { #> disabled <# } #>" 
+							title="{{ data.strings.goToTheNextPage }}"
 							href="#">›</a>
 						<a 
 							data-direction="last" 
-							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--lastPage <% if ( api_args.paged >= pages_count ) { %> disabled <% } %>" 
-							title="<%= strings.goToTheLastPage %>"
+							class="button SimpleHistoryPaginationLink SimpleHistoryPaginationLink--lastPage <# if ( data.api_args.paged >= data.pages_count ) { #> disabled <# } #>" 
+							title="{{ data.strings.goToTheLastPage }}"
 							href="#">»</a>
 					</span>
 				</div>
@@ -766,7 +777,7 @@ class SimpleHistory {
 
 			$plugin_url = plugin_dir_url(__FILE__);
 			wp_enqueue_style( "simple_history_styles", $plugin_url . "css/styles.css", false, SimpleHistory::VERSION );	
-			wp_enqueue_script("simple_history_script", $plugin_url . "js/scripts.js", array("jquery", "backbone"), SimpleHistory::VERSION, true);
+			wp_enqueue_script("simple_history_script", $plugin_url . "js/scripts.js", array("jquery", "backbone", "wp-util"), SimpleHistory::VERSION, true);
 			
 			wp_enqueue_script("select2", $plugin_url . "/js/select2/select2.min.js", array("jquery"));
 			wp_enqueue_style("select2", $plugin_url . "/js/select2/select2.css");
