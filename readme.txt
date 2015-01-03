@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.1
-Stable tag: 2.0.10
+Stable tag: 2.0.11
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -76,9 +76,13 @@ if ( function_exists("SimpleLogger") ) {
 
 #### Translations/Languages
 
-I'm looking for translations of Simple History!
+So far Simple History is translated to:
 
-Check out the [localization](https://developer.wordpress.org/plugins/internationalization/localization/) part of the Plugin Handbook for info on how to translate plugins. When you're done with your translation email it to me at par.thernstrom@gmail.com, or [add a pull request](https://github.com/bonny/WordPress-Simple-History/tree/v2).
+* Swedish
+* German
+* Polish
+
+I'm looking for translations of Simple History in more languages! If you're interested please check out the [localization](https://developer.wordpress.org/plugins/internationalization/localization/) part of the Plugin Handbook for info on how to translate plugins. When you're done with your translation email it to me at par.thernstrom@gmail.com, or [add a pull request](https://github.com/bonny/WordPress-Simple-History/tree/v2).
 
 #### Contribute at GitHub
 
@@ -103,6 +107,12 @@ initiated by a specific user.
 
 
 == Changelog ==
+
+= 2.0.11 (January 2015) =
+
+- Fixed: Comments where not logged correctly.
+- Fixed: Comments where not translated correctly.
+- Updated: German translation updated.
 
 = 2.0.10 (January 2015) =
 
@@ -189,7 +199,7 @@ I've spend hundreds of hours making this update, so if you use it and like it pl
 
 = 1.3.8 =
 - Added filter for rss feed: `simple_history/rss_feed_show`. Fixes more things in this thread: http://wordpress.org/support/topic/more-rss-feed-items.
- 
+
 = 1.3.7 =
 - Added filter for rss feed: `simple_history/rss_feed_args`. Fixes http://wordpress.org/support/topic/more-rss-feed-items.
 
