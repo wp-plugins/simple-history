@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.1
-Stable tag: 2.0.14
+Stable tag: 2.0.15
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -81,6 +81,7 @@ So far Simple History is translated to:
 * Swedish
 * German
 * Polish
+* Danish
 
 I'm looking for translations of Simple History in more languages! If you're interested please check out the [localization](https://developer.wordpress.org/plugins/internationalization/localization/) part of the Plugin Handbook for info on how to translate plugins. When you're done with your translation email it to me at par.thernstrom@gmail.com, or [add a pull request](https://github.com/bonny/WordPress-Simple-History/tree/v2).
 
@@ -108,6 +109,12 @@ initiated by a specific user.
 4. Click on the IP address of an entry to view the location of for example a failed login attempt.
 
 == Changelog ==
+
+= 2.0.15 (January 2015) =
+
+- Fixed: Widget changes where not always translated.
+- Fixed: More RSS fixes to make feed valid. Maybe even for real this time.
+- Updated: German translation updated.
 
 = 2.0.14 (January 2015) =
 
