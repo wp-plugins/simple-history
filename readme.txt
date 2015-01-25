@@ -83,7 +83,7 @@ So far Simple History is translated to:
 * Polish
 * Danish
 
-I'm looking for translations of Simple History in more languages! If you're interested please check out the [localization](https://developer.wordpress.org/plugins/internationalization/localization/) part of the Plugin Handbook for info on how to translate plugins. When you're done with your translation email it to me at par.thernstrom@gmail.com, or [add a pull request](https://github.com/bonny/WordPress-Simple-History/tree/v2).
+I'm looking for translations of Simple History in more languages! If you're interested please check out the [localization](https://developer.wordpress.org/plugins/internationalization/localization/) part of the Plugin Handbook for info on how to translate plugins. When you're done with your translation email it to me at par.thernstrom@gmail.com, or [add a pull request](https://github.com/bonny/WordPress-Simple-History/).
 
 #### Contribute at GitHub
 
@@ -109,6 +109,19 @@ initiated by a specific user.
 4. Click on the IP address of an entry to view the location of for example a failed login attempt.
 
 == Changelog ==
+
+= 2.0.17 (January 2015) =
+
+- Added: messages added using for example `SimpleLogger()->info( __("My log message") )` that have translations now auto translated the message back to english before storing the message (together with the text domain). Then upon retrieval it uses the english message + the text domain to translate the message to the currently selected language. This makes it easier to make multilingual log entries. (Yeah, I know its hard to understand what the heck this does, but it's something good and cool, trust me!)
+- Added: A sidebar with text contents on the history page.
+- Changed: Search now shows only the search box by default, with a link to show all search options.
+- Fixed: Search is now available at the dashboard again. Hooray!
+- Fixed: Old entries were not cleared automatically. Now it correctly removes old events, so your database will not risk growing to large.
+- Fixed: Quick stats could show two messages sometimes.
+- Fixed: When headers like `HTTP_X_FORWARDED_FOR` exists all valid IPs in that header is now stored.
+- Fixed: Plugin updates via third party software like [InfiniteWP](http://infinitewp.com/) should now correctly show the version number of the previos version.
+- Updated: German translation updated.
+- Notice: Do you read these messages? Then you must love this plugin! Come on then, [go and give it a nice review](https://wordpress.org/support/view/plugin-reviews/simple-history).
 
 = 2.0.16 (January 2015) =
 
