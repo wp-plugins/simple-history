@@ -33,11 +33,11 @@ SimpleLogger()->debug("Ok, cron job is running!");
 // i.e. collapsing their entries into one expandable log item
 SimpleLogger()->info("This is a message sent to the log");
 SimpleLogger()->info("This is a message sent to the log");
-		
+
 // Log entries can have placeholders and context
 // This makes log entried translatable and filterable
 SimpleLogger()->notice(
-	"User {username} edited page {pagename}", 
+	"User {username} edited page {pagename}",
 	array(
 		"username" => "jessie",
 		"pagename" => "My test page",
@@ -53,13 +53,13 @@ SimpleLogger()->notice(
 // in the log overview, even if the logged messages are different
 for ($i = 0; $i < rand(1, 50); $i++) {
 	SimpleLogger()->notice("User {username} edited page {pagename}", array(
-		"username" => "example_user_{$i}", 
+		"username" => "example_user_{$i}",
 		"pagename" => "My test page",
 		"_occasionsID" => "postID:24884,action:edited"
 	));
 }
 
-// Events can have different "initiators", 
+// Events can have different "initiators",
 // i.e. who was responsible for the logged event
 // Initiator "WORDPRESS" means that WordPress did something on it's own
 SimpleLogger()->info(
@@ -99,3 +99,50 @@ SimpleLogger()->info("Edited product '{pagename}'", array(
 	"_userEmail" => "jessie@example.com",
 	"_occasionsID" => "username:1,postID:24885,action:edited"
 ));
+
+
+// Test log cron things
+/*
+wp_schedule_event( time(), "hourly", "simple_history_cron_testhook");
+*/
+/*
+wp_clear_scheduled_hook("simple_history_cron_testhook");
+add_action( 'simple_history_cron_testhook', 'simple_history_cron_testhook_function' );
+function simple_history_cron_testhook_function() {
+	SimpleLogger()->info("This is a message inside a cron function");
+}
+*/
+
+/*
+add_action("init", function() {
+
+	global $wp_current_filter;
+
+	$doing_cron = get_transient( 'doing_cron' );
+	$const_doing_cron = defined('DOING_CRON') && DOING_CRON;
+
+	if ($const_doing_cron) {
+
+		$current_filter = current_filter();
+
+		SimpleLogger()->info("This is a message inside init, trying to log crons", array(
+			"doing_cron" => simpleHistory::json_encode($doing_cron),
+			"current_filter" => $current_filter,
+			"wp_current_filter" => $wp_current_filter,
+			"wp_current_filter" => simpleHistory::json_encode( $wp_current_filter ),
+			"const_doing_cron" => simpleHistory::json_encode($const_doing_cron)
+		));
+
+	}
+
+}, 100);
+*/
+
+
+/*
+add_action("init", function() {
+
+	#SimpleLogger()->info("This is a regular info message" . time());
+
+}, 100);
+// */
