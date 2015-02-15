@@ -144,6 +144,10 @@ class SimpleLogger {
 				$initiator_html .= '<strong class="SimpleHistoryLogitem__inlineDivided">WordPress</strong> ';
 				break;
 
+			case "wp_cli":
+				$initiator_html .= '<strong class="SimpleHistoryLogitem__inlineDivided">WP-CLI</strong> ';
+				break;
+
 			// wp_user = wordpress uses, but user may have been deleted since log entry was added
 			case "wp_user":
 
@@ -172,14 +176,14 @@ class SimpleLogger {
 						'	;
 					}
 
-				/**
-				 * Filter the format for the user output
-				 *
-				 * @since 2.0
-				 *
-				 * @param string $format.
-				 */
-					$$tmpl_initiator_html = apply_filters("simple_history/header_initiator_html_existing_user", $tmpl_initiator_html);
+					/**
+					 * Filter the format for the user output
+					 *
+					 * @since 2.0
+					 *
+					 * @param string $format.
+					 */
+					$tmpl_initiator_html = apply_filters("simple_history/header_initiator_html_existing_user", $tmpl_initiator_html);
 
 					$initiator_html .= sprintf(
 						$tmpl_initiator_html,
@@ -517,16 +521,50 @@ class SimpleLogger {
 	 */
 	public function emergencyMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
+		return $this->logByMessageKey(SimpleLoggerLogLevels::EMERGENCY, $message, $context);
+
+	}
+
+	/**
+	 * Log with message
+	 * Called from infoMessage(), errorMessage(), and so on
+	 *
+	 * Call like this:
+	 *
+	 *   return $this->logByMessageKey(SimpleLoggerLogLevels::EMERGENCY, $message, $context);
+	 */
+	private function logByMessageKey($SimpleLoggerLogLevelsLevel, $messageKey, $context) {
+	
+		// When logging by message then the key must exist	
+		if ( ! isset( $this->messages[ $messageKey ]["untranslated_text"] ) ) {
 			return;
 		}
 
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
+		/**
+		 * Filter so plugins etc. can shortut logging
+		 *
+		 * @since 2.0.20
+		 *
+		 * @param true yes, we default to do the logging
+		 * @param string logger slug
+		 * @param string messageKey
+		 * @param string log level
+		 * @param array context
+		 * @return bool false to abort logging
+		 */
+		$doLog = apply_filters("simple_history/simple_logger/log_message_key", true, $this->slug, $messageKey, $SimpleLoggerLogLevelsLevel, $context);
+		
+		if ( ! $doLog ) {
+			return;
+		}
 
-		$this->log(SimpleLoggerLogLevels::EMERGENCY, $message, $context);
+		$context["_message_key"] = $messageKey;
+		$message = $this->messages[ $messageKey ]["untranslated_text"];
+
+		$this->log( $SimpleLoggerLogLevelsLevel, $message, $context );
 
 	}
+
 
 	/**
 	 * Action must be taken immediately.
@@ -549,14 +587,7 @@ class SimpleLogger {
 	 */
 	public function alertMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
-			return;
-		}
-
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
-
-		$this->log(SimpleLoggerLogLevels::ALERT, $message, $context);
+		return $this->logByMessageKey(SimpleLoggerLogLevels::ALERT, $message, $context);
 
 	}
 
@@ -619,14 +650,7 @@ class SimpleLogger {
 	 */
 	public function errorMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
-			return;
-		}
-
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
-
-		$this->log(SimpleLoggerLogLevels::ERROR, $message, $context);
+		return $this->logByMessageKey(SimpleLoggerLogLevels::ERROR, $message, $context);
 
 	}
 
@@ -655,14 +679,7 @@ class SimpleLogger {
 	 */
 	public function warningMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
-			return;
-		}
-
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
-
-		$this->log(SimpleLoggerLogLevels::WARNING, $message, $context);
+		return $this->logByMessageKey(SimpleLoggerLogLevels::WARNING, $message, $context);
 
 	}
 
@@ -688,14 +705,7 @@ class SimpleLogger {
 	 */
 	public function noticeMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
-			return;
-		}
-
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
-
-		$this->log(SimpleLoggerLogLevels::NOTICE, $message, $context);
+		return $this->logByMessageKey(SimpleLoggerLogLevels::NOTICE, $message, $context);
 
 	}
 
@@ -725,14 +735,7 @@ class SimpleLogger {
 	 */
 	public function infoMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
-			return;
-		}
-
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
-
-		$this->log(SimpleLoggerLogLevels::INFO, $message, $context);
+		return $this->logByMessageKey(SimpleLoggerLogLevels::INFO, $message, $context);
 
 	}
 
@@ -758,14 +761,7 @@ class SimpleLogger {
 	 */
 	public function debugMessage($message, array $context = array()) {
 
-		if (!isset($this->messages[$message]["untranslated_text"])) {
-			return;
-		}
-
-		$context["_message_key"] = $message;
-		$message = $this->messages[$message]["untranslated_text"];
-
-		$this->log(SimpleLoggerLogLevels::DEBUG, $message, $context);
+		return $this->logByMessageKey(SimpleLoggerLogLevels::DEBUG, $message, $context);
 
 	}
 
@@ -810,8 +806,12 @@ class SimpleLogger {
 		 * @param string $level
 		 * @param string $message
 		 * @param array $context
+		 * @param object SimpleLogger object
 		 */
-		apply_filters("simple_history/log_arguments", $level, $message, $context);
+		apply_filters("simple_history/log_arguments", $level, $message, $context, $this);
+		$context = apply_filters("simple_history/log_argument/context", $context, $level, $message, $this);
+		$level = apply_filters("simple_history/log_argument/level", $level, $context, $message, $this);
+		$message = apply_filters("simple_history/log_argument/message", $message, $level, $context, $this);
 
 		/* Store date at utc or local time?
 		 * Some info here:
@@ -888,24 +888,25 @@ class SimpleLogger {
 		 */
 
 		// Log initiator, defaults to current user if exists, or other if not user exist
-		if (isset($context["_initiator"])) {
+		if ( isset( $context["_initiator"] ) ) {
 
 			// Manually set in context
 			$data["initiator"] = $context["_initiator"];
-			unset($context["_initiator"]);
+			unset( $context["_initiator"] );
 
 		} else {
 
-			// No initiator set.
+			// No initiator set, try to determine
 
+			// Default to other
 			$data["initiator"] = SimpleLoggerLogInitiators::OTHER;
 
 			// Check if user is responsible.
-			if (function_exists("wp_get_current_user")) {
+			if ( function_exists("wp_get_current_user") ) {
 
 				$current_user = wp_get_current_user();
 
-				if (isset($current_user->ID) && $current_user->ID) {
+				if ( isset( $current_user->ID ) && $current_user->ID ) {
 
 					$data["initiator"] = SimpleLoggerLogInitiators::WP_USER;
 					$context["_user_id"] = $current_user->ID;
@@ -917,11 +918,23 @@ class SimpleLogger {
 			}
 
 			// If cron then set WordPress as responsible
-			if (defined('DOING_CRON') && DOING_CRON) {
+			if ( defined('DOING_CRON') && DOING_CRON ) {
 
 				// Seems to be wp cron running and doing this
 				$data["initiator"] = SimpleLoggerLogInitiators::WORDPRESS;
 				$context["_wp_cron_running"] = true;
+
+			}
+
+			// If running as CLI and WP_CLI_PHP_USED is set then it is WP CLI that is doing it
+			// How to log this? Is this a user, is it WordPress, or what?
+			// I'm thinking: 
+			//  - it is a user that is manually doing this, on purpose, with intent, so not auto wordpress
+			//  - it is a specific user, but we don't know who
+			// - sounds like a special case, set initiator to wp_cli
+			if ( isset( $_SERVER["WP_CLI_PHP_USED"] ) && "cli" == php_sapi_name() ) {
+				
+				$data["initiator"] = SimpleLoggerLogInitiators::WP_CLI;
 
 			}
 
@@ -1055,10 +1068,12 @@ class SimpleLogger {
 
 		$this->lastInsertID = $history_inserted_id;
 
+		$this->simpleHistory->get_cache_incrementor(true);
+
 		// Return $this so we can chain methods
 		return $this;
 
-	}// log
+	} // log
 
 	/**
 	 * Ensures an ip address is both a valid IP and does not fall within
@@ -1124,6 +1139,9 @@ class SimpleLoggerLogInitiators {
 
 	// WordPress core or plugins updated automatically via wp-cron
 	const WORDPRESS = "wp";
+
+	// WP CLI / terminal
+	const WP_CLI = "wp_cli";
 
 	// I dunno
 	const OTHER = 'other';
