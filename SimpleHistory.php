@@ -6,7 +6,7 @@
 class SimpleHistory {
 
 	const NAME = "Simple History";
-	const VERSION = "2.0.20";
+	const VERSION = "2.0.21";
 
 	/**
 	 * Capability required to view the history log
@@ -119,27 +119,33 @@ class SimpleHistory {
 		 * @param SimpleHistory $SimpleHistory This class.
 		 */
 		do_action("simple_history/after_init", $this);
-		
-		// @todo run this when a debug const is defined and true
-		/*
-		add_filter("simple_history/log_argument/context", function($context, $level, $message, $logger) {
 
-			$context["_debug_get"] = $this->json_encode( $_GET );
-			$context["_debug_post"] = $this->json_encode( $_POST );
-			$context["_debug_server"] = $this->json_encode( $_SERVER );
-			$context["_debug_php_sapi_name"] = php_sapi_name();
+		// Add some extra info to each logged context when SIMPLE_HISTORY_LOG_DEBUG is set and true
+		if ( defined("SIMPLE_HISTORY_LOG_DEBUG") && SIMPLE_HISTORY_LOG_DEBUG ) {
 
-			global $argv;
-			$context["_debug_argv"] = $this->json_encode( $argv );
+			add_filter("simple_history/log_argument/context", function($context, $level, $message, $logger) {
 
-			// $context["_debug_env"] = $this->json_encode( $_ENV );
-			
-			$context["_debug_constants"] = $this->json_encode( get_defined_constants(true) );
+				$sh = $GLOBALS["simple_history"];
+				$context["_debug_get"] = $sh->json_encode( $_GET );
+				$context["_debug_post"] = $sh->json_encode( $_POST );
+				$context["_debug_server"] = $sh->json_encode( $_SERVER );
+				$context["_debug_php_sapi_name"] = php_sapi_name();
 
-			return $context;
+				global $argv;
+				$context["_debug_argv"] = $sh->json_encode( $argv );
 
-		}, 10, 4);
-		*/
+				$consts = get_defined_constants(true);
+				$consts = $consts["user"];
+				$context["_debug_user_constants"] = $sh->json_encode( $consts );
+
+				$postdata = file_get_contents("php://input");
+				$context["_debug_http_raw_post_data"] = $sh->json_encode( $postdata );
+
+				return $context;
+
+			}, 10, 4);
+
+		}
 
 	}
 
@@ -2331,7 +2337,7 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 			$results_other_sources_today = $wpdb->get_results($sql_other_sources);
 			wp_cache_set($cache_key, $results_other_sources_today, $cache_group);
-		
+
 		}
 
 		$count_other_sources = sizeof($results_other_sources_today);
@@ -2448,7 +2454,7 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 	/**
 	 * https://www.tollmanz.com/invalidation-schemes/
-	 * 
+	 *
 	 * @param $refresh bool
 	 * @return string
 	 */
