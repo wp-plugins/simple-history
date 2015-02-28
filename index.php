@@ -3,7 +3,7 @@
 Plugin Name: Simple History
 Plugin URI: http://simple-history.com
 Description: Plugin that logs various things that occur in WordPress and then presents those events in a very nice GUI.
-Version: 2.0.21
+Version: 2.0.22
 Author: Pär Thernström
 Author URI: http://simple-history.com/
 License: GPL2
@@ -32,9 +32,8 @@ if ( ! defined( 'WPINC' ) ) {
 if ( version_compare( phpversion(), "5.3", ">=") ) {
 
 	/** Load required files */
-	require_once(__DIR__ . "/SimpleHistory.php");
-	require_once(__DIR__ . "/SimpleHistoryLogQuery.php");
-	require_once(__DIR__ . "/SimpleHistoryFunctions.php");
+	require_once(__DIR__ . "/inc/SimpleHistory.php");
+	require_once(__DIR__ . "/inc/SimpleHistoryLogQuery.php");
 
 	/**
 	 * Register function that is called when plugin is installed
@@ -44,7 +43,7 @@ if ( version_compare( phpversion(), "5.3", ">=") ) {
 	// register_activation_hook( trailingslashit(WP_PLUGIN_DIR) . trailingslashit( plugin_basename(__DIR__) ) . "index.php" , array("SimpleHistory", "on_plugin_activate" ) );
 
 	/** Boot up */
-	$GLOBALS["simple_history"] = new SimpleHistory();
+	SimpleHistory::get_instance();
 
 } else {
 
@@ -66,3 +65,4 @@ if ( version_compare( phpversion(), "5.3", ">=") ) {
 	}
 
 }
+

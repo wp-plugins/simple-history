@@ -16,9 +16,41 @@ define("SIMPLE_HISTORY_LOG_DEBUG", true);
  * Some examples of filter usage and so on
  */
 
+
+// Skip loading of loggers
+add_filter("simple_history/logger/load_logger", function($load_logger, $oneLoggerFile) {
+
+	// Don't load loggers for comments or menus, i.e. don't log changes to comments or to menus
+	if ( in_array($oneLoggerFile, array("SimpleCommentsLogger", "SimpleMenuLogger")) ) {
+		$load_logger = false;
+	}
+
+	return $load_logger;
+
+}, 10, 2);
+
+
+// Skip the loading of dropins
+add_filter("simple_history/dropin/load_dropin", function($load_dropin, $dropinFileBasename) {
+	
+	// Don't load the RSS feed dropin
+	if ( $dropinFileBasename == "SimpleHistoryRSSDropin" ) {
+		$load_dropin = false;
+	}
+
+	// Don't load the dropin that polls for changes
+	if ( $dropinFileBasename == "SimpleHistoryNewRowsNotifier" ) {
+		$load_dropin = false;
+	}
+
+	return $load_dropin;
+
+}, 10, 2);
+
+
 // Don't log failed logins
 add_filter("simple_history/simple_logger/log_message_key", function($doLog, $loggerSlug, $messageKey, $SimpleLoggerLogLevelsLevel, $context) {
-	
+
 	// Don't log login attempts to non existing users
 	if ( "SimpleUserLogger" == $loggerSlug && "user_unknown_login_failed" == $messageKey ) {
 		$doLog = false;

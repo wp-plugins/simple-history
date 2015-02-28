@@ -6,7 +6,12 @@
 class SimpleHistory {
 
 	const NAME = "Simple History";
-	const VERSION = "2.0.21";
+	const VERSION = "2.0.22";
+
+	/**
+	 * For singleton
+	 */
+	private static $instance;
 
 	/**
 	 * Capability required to view the history log
@@ -125,7 +130,7 @@ class SimpleHistory {
 
 			add_filter("simple_history/log_argument/context", function($context, $level, $message, $logger) {
 
-				$sh = $GLOBALS["simple_history"];
+				$sh = SimpleHistory::get_instance();
 				$context["_debug_get"] = $sh->json_encode( $_GET );
 				$context["_debug_post"] = $sh->json_encode( $_POST );
 				$context["_debug_server"] = $sh->json_encode( $_SERVER );
@@ -146,6 +151,22 @@ class SimpleHistory {
 			}, 10, 4);
 
 		}
+
+	}
+
+	/**
+	 * Get singleton intance
+	 * @return SimpleHistory instance
+	 */
+	public static function get_instance() {
+
+		if ( ! isset( self::$instance ) ) {
+			
+			self::$instance = new SimpleHistory();
+
+		}
+
+		return self::$instance;
 
 	}
 
@@ -495,7 +516,7 @@ class SimpleHistory {
 		$this->view_settings_capability = apply_filters("simple_history_view_settings_capability", $this->view_settings_capability);
 		$this->view_settings_capability = apply_filters("simple_history/view_settings_capability", $this->view_settings_capability);
 
-		$this->plugin_basename = plugin_basename(__DIR__ . "/index.php");
+		$this->plugin_basename = plugin_basename(__DIR__ . "/../index.php");
 
 	}
 
@@ -543,7 +564,7 @@ class SimpleHistory {
 	 */
 	public function loadLoggers() {
 
-		$loggersDir = __DIR__ . "/loggers/";
+		$loggersDir = __DIR__ . "/../loggers/";
 
 		/**
 		 * Filter the directory to load loggers from
@@ -571,9 +592,28 @@ class SimpleHistory {
 		$loggersFiles = apply_filters("simple_history/loggers_files", $loggersFiles);
 
 		$arrLoggersToInstantiate = array();
-		foreach ($loggersFiles as $oneLoggerFile) {
 
-			if (basename($oneLoggerFile) == "SimpleLogger.php") {
+		foreach ( $loggersFiles as $oneLoggerFile ) {
+
+			$load_logger = true;
+
+			$basename_no_suffix = basename($oneLoggerFile, ".php");
+
+			/**
+			 * Filter to completely skip loading of a logger
+			 *
+			 * @since 2.0.22
+			 *
+			 * @param bool if to load the logger. return false to not load it.
+			 * @param srting slug of logger
+			 */
+			$load_logger = apply_filters("simple_history/logger/load_logger", $load_logger, $basename_no_suffix );
+
+			if ( ! $load_logger ) {
+				continue;
+			}
+
+			if ( basename( $oneLoggerFile ) == "SimpleLogger.php") {
 
 				// SimpleLogger is already loaded
 
@@ -583,7 +623,7 @@ class SimpleHistory {
 
 			}
 
-			$arrLoggersToInstantiate[] = basename($oneLoggerFile, ".php");
+			$arrLoggersToInstantiate[] = $basename_no_suffix;
 
 		}
 
@@ -595,6 +635,7 @@ class SimpleHistory {
 		 * @param array $arrLoggersToInstantiate Array with class names
 		 */
 		$arrLoggersToInstantiate = apply_filters("simple_history/loggers_to_instantiate", $arrLoggersToInstantiate);
+		
 		// Instantiate each logger
 		foreach ($arrLoggersToInstantiate as $oneLoggerName) {
 
@@ -659,7 +700,7 @@ class SimpleHistory {
 	 */
 	public function loadDropins() {
 
-		$dropinsDir = __DIR__ . "/dropins/";
+		$dropinsDir = __DIR__ . "/../dropins/";
 
 		/**
 		 * Filter the directory to load loggers from
@@ -690,6 +731,8 @@ class SimpleHistory {
 			// path/path/simplehistory/dropins/SimpleHistoryDonateDropin.php => SimpleHistoryDonateDropin
 			$oneDropinFileBasename = basename($oneDropinFile, ".php");
 
+			$load_dropin = true;
+
 			/**
 			 * Filter to completely skip loading of dropin
 			 * complete filer name will be like:
@@ -699,9 +742,19 @@ class SimpleHistory {
 			 *
 			 * @param bool if to load the dropin. return false to not load it.
 			 */
-			$load_dropin = apply_filters("simple_history/dropin/load_dropin_{$oneDropinFileBasename}", true);
+			$load_dropin = apply_filters("simple_history/dropin/load_dropin_{$oneDropinFileBasename}", $load_dropin);
 
-			if (!$load_dropin) {
+			/**
+			 * Filter to completely skip loading of a dropin
+			 *
+			 * @since 2.0.22
+			 *
+			 * @param bool if to load the dropin. return false to not load it.
+			 * @param string slug of dropin
+			 */
+			$load_dropin = apply_filters("simple_history/dropin/load_dropin", $load_dropin, $oneDropinFileBasename);
+
+			if ( ! $load_dropin ) {
 				continue;
 			}
 
@@ -852,7 +905,7 @@ class SimpleHistory {
 
 			add_thickbox();
 
-			$plugin_url = plugin_dir_url(__FILE__);
+			$plugin_url = plugin_dir_url(__DIR__ . "/../index.php");
 			wp_enqueue_style("simple_history_styles", $plugin_url . "css/styles.css", false, SimpleHistory::VERSION);
 			wp_enqueue_script("simple_history_script", $plugin_url . "js/scripts.js", array("jquery", "backbone", "wp-util"), SimpleHistory::VERSION, true);
 
@@ -1206,19 +1259,19 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 	public function settings_output_log() {
 
-		include __DIR__ . "/templates/settings-log.php";
+		include __DIR__ . "/../templates/settings-log.php";
 
 	}
 
 	public function settings_output_general() {
 
-		include __DIR__ . "/templates/settings-general.php";
+		include __DIR__ . "/../templates/settings-general.php";
 
 	}
 
 	public function settings_output_styles_example() {
 
-		include __DIR__ . "/templates/settings-style-example.php";
+		include __DIR__ . "/../templates/settings-style-example.php";
 
 	}
 
@@ -2474,3 +2527,42 @@ foreach ($arr_settings_tabs as $one_tab) {
 	}
 
 } // class
+
+
+/**
+ * Helper function with same name as the SimpleLogger-class
+ *
+ * Makes call like this possible:
+ * SimpleLogger()->info("This is a message sent to the log");
+ */
+function SimpleLogger() {
+	return new SimpleLogger( SimpleHistory::get_instance() );
+}
+
+
+/**
+ * Add event to history table
+ * This is here for backwards compatibility
+ * If you use this please consider using
+ * SimpleHistory()->info();
+ * instead
+ */
+function simple_history_add($args) {
+
+	$defaults = array(
+		"action"         => null,
+		"object_type"    => null,
+		"object_subtype" => null,
+		"object_id"      => null,
+		"object_name"    => null,
+		"user_id"        => null,
+		"description"    => null
+	);
+
+	$context = wp_parse_args( $args, $defaults );
+
+	$message = "{$context["object_type"]} {$context["object_name"]} {$context["action"]}";
+
+	SimpleLogger()->info($message, $context);
+
+} // simple_history_add
