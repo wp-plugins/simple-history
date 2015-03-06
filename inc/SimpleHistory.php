@@ -6,7 +6,9 @@
 class SimpleHistory {
 
 	const NAME = "Simple History";
-	const VERSION = "2.0.22";
+
+	// Dont use this any more! Will be removed in future versions. Use global SIMPLE_HISTORY_VERSION instead.
+	const VERSION = "2.0.23";
 
 	/**
 	 * For singleton
@@ -516,7 +518,7 @@ class SimpleHistory {
 		$this->view_settings_capability = apply_filters("simple_history_view_settings_capability", $this->view_settings_capability);
 		$this->view_settings_capability = apply_filters("simple_history/view_settings_capability", $this->view_settings_capability);
 
-		$this->plugin_basename = plugin_basename(__DIR__ . "/../index.php");
+		$this->plugin_basename = SIMPLE_HISTORY_BASENAME;
 
 	}
 
@@ -564,7 +566,7 @@ class SimpleHistory {
 	 */
 	public function loadLoggers() {
 
-		$loggersDir = __DIR__ . "/../loggers/";
+		$loggersDir = SIMPLE_HISTORY_PATH . "loggers/";
 
 		/**
 		 * Filter the directory to load loggers from
@@ -690,8 +692,6 @@ class SimpleHistory {
 
 		do_action("simple_history/loggers_loaded");
 
-		#sf_d($this->instantiatedLoggers);exit;
-
 	}
 
 	/**
@@ -700,7 +700,7 @@ class SimpleHistory {
 	 */
 	public function loadDropins() {
 
-		$dropinsDir = __DIR__ . "/../dropins/";
+		$dropinsDir = SIMPLE_HISTORY_PATH . "dropins/";
 
 		/**
 		 * Filter the directory to load loggers from
@@ -836,9 +836,20 @@ class SimpleHistory {
 	 */
 	function add_dashboard_widget() {
 
-		if ($this->setting_show_on_dashboard() && current_user_can($this->view_history_capability)) {
+		if ( $this->setting_show_on_dashboard() && current_user_can( $this->view_history_capability ) ) {
 
-			wp_add_dashboard_widget("simple_history_dashboard_widget", __("Simple History", 'simple-history'), array($this, "dashboard_widget_output"));
+			/**
+			 * Filter to determine if history page should be added to page below dashboard or not
+			 *
+			 * @since 2.0.23
+			 *
+			 * @param bool Show the page or not
+			 */
+			$show_dashboard_widget = apply_filters("simple_history/show_dashboard_widget", true);
+			
+			if ( $show_dashboard_widget ) {
+				wp_add_dashboard_widget("simple_history_dashboard_widget", __("Simple History", 'simple-history'), array($this, "dashboard_widget_output"));
+			}
 
 		}
 	}
@@ -905,9 +916,10 @@ class SimpleHistory {
 
 			add_thickbox();
 
-			$plugin_url = plugin_dir_url(__DIR__ . "/../index.php");
-			wp_enqueue_style("simple_history_styles", $plugin_url . "css/styles.css", false, SimpleHistory::VERSION);
-			wp_enqueue_script("simple_history_script", $plugin_url . "js/scripts.js", array("jquery", "backbone", "wp-util"), SimpleHistory::VERSION, true);
+			$plugin_url = plugin_dir_url(SIMPLE_HISTORY_BASENAME);
+
+			wp_enqueue_style("simple_history_styles", $plugin_url . "css/styles.css", false, SIMPLE_HISTORY_VERSION);
+			wp_enqueue_script("simple_history_script", $plugin_url . "js/scripts.js", array("jquery", "backbone", "wp-util"), SIMPLE_HISTORY_VERSION, true);
 
 			wp_enqueue_script("select2", $plugin_url . "/js/select2/select2.min.js", array("jquery"));
 			wp_enqueue_style("select2", $plugin_url . "/js/select2/select2.css");
@@ -1259,19 +1271,19 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 	public function settings_output_log() {
 
-		include __DIR__ . "/../templates/settings-log.php";
+		include SIMPLE_HISTORY_PATH . "templates/settings-log.php";
 
 	}
 
 	public function settings_output_general() {
 
-		include __DIR__ . "/../templates/settings-general.php";
+		include SIMPLE_HISTORY_PATH . "templates/settings-general.php";
 
 	}
 
 	public function settings_output_styles_example() {
 
-		include __DIR__ . "/../templates/settings-style-example.php";
+		include SIMPLE_HISTORY_PATH . "templates/settings-style-example.php";
 
 	}
 
@@ -1289,23 +1301,37 @@ foreach ($arr_settings_tabs as $one_tab) {
 	function add_admin_pages() {
 
 		// Add a history page as a sub-page below the Dashboard menu item
-		if ($this->setting_show_as_page()) {
+		if ( $this->setting_show_as_page() ) {
 
-			add_dashboard_page(
-				SimpleHistory::NAME,
-				_x("Simple History", 'dashboard menu name', 'simple-history'),
-				$this->view_history_capability,
-				"simple_history_page",
-				array($this, "history_page_output")
-			);
+			/**
+			 * Filter to determine if history page should be added to page below dashboard or not
+			 *
+			 * @since 2.0.23
+			 *
+			 * @param bool Show the page or not
+			 */
+			$show_dashboard_page = apply_filters("simple_history/show_dashboard_page", true);
+
+			if ( $show_dashboard_page ) {
+			
+				add_dashboard_page(
+					SimpleHistory::NAME,
+					_x("Simple History", 'dashboard menu name', 'simple-history'),
+					$this->view_history_capability,
+					"simple_history_page",
+					array($this, "history_page_output")
+				);
+
+			}
 
 		}
 
 		// Add a settings page
 		$show_settings_page = true;
 		$show_settings_page = apply_filters("simple_history_show_settings_page", $show_settings_page);
-		$show_settings_page = apply_filters("simple_history/show_settings_page", $show_settings_page);
-		if ($show_settings_page) {
+		$show_settings_page = apply_filters("simple_history/show_settings_page", $show_settings_page);		
+
+		if ( $show_settings_page ) {
 
 			add_options_page(
 				__('Simple History Settings', "simple-history"),
@@ -1560,6 +1586,12 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 		$days = 60;
 
+		/**
+		 * Filter to modify number of days of history to keep.
+		 * Default is 60 days.
+		 *
+		 * @param $days Number of days of history to keep
+		 */
 		$days = (int) apply_filters("simple_history_db_purge_days_interval", $days);
 		$days = (int) apply_filters("simple_history/db_purge_days_interval", $days);
 

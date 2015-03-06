@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.1
-Stable tag: 2.0.22
+Stable tag: 2.0.23
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -37,6 +37,8 @@ There is also a **RSS feed of changes** available, so you can keep track of the 
 
 It’s a plugin that is good to have on websites where several people are
 involved in editing the content.
+
+The plugin works fine on [multisite installations of WordPress](http://codex.wordpress.org/Glossary#Multisite) too.
 
 #### Example scenarios
 
@@ -111,10 +113,17 @@ initiated by a specific user.
 
 == Changelog ==
 
+= 2.0.23 = 
+
+- Added: Filter `simple_history/rss_item_link`, so plugins can modify the link used in the RSS feed.
+- Added: Links for changed posts and attachments in RSS feed now links directly to WordPress admin, making is easier to follow things from your RSS reeder.
+- Added: Filters to hide history dashboard widget and history dashboard page. Filters are `simple_history/show_dashboard_widget` and `simple_history/show_dashboard_page`.
+- Fixed: A missing argument error when deleting a plugin. Fixes https://wordpress.org/support/topic/warning-missing-argument-1-for-simplepluginlogger.
+
 = 2.0.22 (February 2015) =
 
 - Fixed: Deleted plugins were not logged correctly (name and other info was missing).
-- Added: Filter `simple_history/logger/load_logger` and `simple_history/dropin/load_dropin` that can be used to control the loading of each logger or dropin. See [example file](https://github.com/bonny/WordPress-Simple-History/blob/master/examples.php) for usage examples.
+- Added: Filter `simple_history/logger/load_logger` and `simple_history/dropin/load_dropin` that can be used to control the loading of each logger or dropin. See [example file](https://github.com/bonny/WordPress-Simple-History/blob/master/examples/examples.php) for usage examples.
 - Fixed: modal window with context data now works better on small screens.
 - Changed: Misc internal changes.
 
@@ -132,7 +141,7 @@ initiated by a specific user.
 - Added: changes via [WP-CLI](http://wp-cli.org) is now detected (was previously shown as "other").
 - Added: severity level (info, warning, debug, etc.) of event is includes in the RSS output.
 - Changed the way user login is logged. Should fix https://github.com/bonny/WordPress-Simple-History/issues/40 + possible more related issues.
-- Added: filter `simple_history/simple_logger/log_message_key` added, that can be used to shortcut log messages. See [example file](https://github.com/bonny/WordPress-Simple-History/blob/master/examples.php) for usage. Fixes https://wordpress.org/support/topic/stop-logging-certain-types-of-activity.
+- Added: filter `simple_history/simple_logger/log_message_key` added, that can be used to shortcut log messages. See [example file](https://github.com/bonny/WordPress-Simple-History/blob/master/examples/examples.php) for usage. Fixes https://wordpress.org/support/topic/stop-logging-certain-types-of-activity.
 - Added: now uses object caching at some places. Should speed up some parts of the plugin for users with caching enabled.
 - Fixed: IP info popup can now be closed with `esc`.
 - Fixed: works better on small screens (like mobile phones) + misc other style related fixes.
