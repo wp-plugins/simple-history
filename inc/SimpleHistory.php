@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) or die();
+
 /**
  * Main class for Simple History
  */
@@ -8,7 +10,7 @@ class SimpleHistory {
 	const NAME = "Simple History";
 
 	// Dont use this any more! Will be removed in future versions. Use global SIMPLE_HISTORY_VERSION instead.
-	const VERSION = "2.0.24";
+	const VERSION = "2.0.25";
 
 	/**
 	 * For singleton
@@ -136,6 +138,7 @@ class SimpleHistory {
 				$context["_debug_get"] = $sh->json_encode( $_GET );
 				$context["_debug_post"] = $sh->json_encode( $_POST );
 				$context["_debug_server"] = $sh->json_encode( $_SERVER );
+				$context["_debug_files"] = $sh->json_encode( $_FILES );
 				$context["_debug_php_sapi_name"] = php_sapi_name();
 
 				global $argv;
@@ -1910,15 +1913,24 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 		}
 
+		// Add data atributes to log row, so plugins can do stuff
 		$data_attrs = "";
 		$data_attrs .= sprintf(' data-row-id="%1$d" ', $oneLogRow->id);
 		$data_attrs .= sprintf(' data-occasions-count="%1$d" ', $occasions_count);
-		$data_attrs .= sprintf(' data-occasions-id="%1$s" ', $oneLogRow->occasionsID);
-		$data_attrs .= sprintf(' data-ip-address="%1$s" ', esc_attr($oneLogRow->context["_server_remote_addr"]));
+		$data_attrs .= sprintf(' data-occasions-id="%1$s" ', esc_attr( $oneLogRow->occasionsID ));
+		$data_attrs .= sprintf(' data-ip-address="%1$s" ', esc_attr( $oneLogRow->context["_server_remote_addr"] ) );
+		$data_attrs .= sprintf(' data-logger="%1$s" ', esc_attr( $oneLogRow->logger ) );
+		$data_attrs .= sprintf(' data-level="%1$s" ', esc_attr( $oneLogRow->level ) );
+		$data_attrs .= sprintf(' data-date="%1$s" ', esc_attr( $oneLogRow->date ) );
+		$data_attrs .= sprintf(' data-initiator="%1$s" ', esc_attr( $oneLogRow->initiator ) );
+		
+		if ( isset( $oneLogRow->context["_user_id"] ) ) {
+			$data_attrs .= sprintf(' data-initiator-user-id="%1$d" ', $oneLogRow->context["_user_id"] );
+		}
 
 		// If type is single then include more details
 		$more_details_html = "";
-		if ($args["type"] == "single") {
+		if ( $args["type"] == "single" ) {
 
 			$more_details_html .= sprintf('<h2 class="SimpleHistoryLogitem__moreDetailsHeadline">%1$s</h2>', __("Context data", "simple-history"));
 			$more_details_html .= "<p>" . __("This is potentially useful meta data that a logger has saved.", "simple-history") . "</p>";
