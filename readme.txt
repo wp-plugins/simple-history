@@ -115,6 +115,11 @@ initiated by a specific user.
 
 ## Changelog
 
+= 2.0.26 =
+
+- Fixed: Plugin installs from wordpress.org would show "wordpress plugin directory" as their source file. Looked stupid. Fixed now!
+- Added: `composer.json` added, so Simple History can be pulled in to other projects via [Composer](https://getcomposer.org/). Actually untested, but at least the file is there. Please let me know if it works! :)
+
 = 2.0.25 =
 
 - Added: Plugin installs now shows the source of the plugin. Supported sources are "WordPress plugin repository" and "uploaded ZIP archives".
