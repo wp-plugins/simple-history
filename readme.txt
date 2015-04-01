@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.1
-Stable tag: 2.0.27
+Stable tag: 2.0.28
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -115,6 +115,11 @@ initiated by a specific user.
 
 ## Changelog
 
+= 2.0.28 =
+
+- Fixed: Do not try to load the Translation Install API. Fixes https://github.com/bonny/WordPress-Simple-History/issues/67.
+- Updated: German translation updated.
+
 = 2.0.27 (April 2015) =
 
 - Fixed: Even better support for plugins from GitHub with the `GitHub Plugin URI` header. Plugin install, deactivations, and activations should have correct view-info-links now.
@@ -145,7 +150,7 @@ initiated by a specific user.
 - Changed: Loading of loggers, dropins, and so one are moved from action `plugins_loaded` to `after_setup_theme` so themes can actually use for example the load_dropin_*-filters...
 - Changed: Misc small design fixes.
 
-= 2.0.23 (March 2015) = 
+= 2.0.23 (March 2015) =
 
 - Added: Filter `simple_history/rss_item_link`, so plugins can modify the link used in the RSS feed.
 - Added: Links for changed posts and attachments in RSS feed now links directly to WordPress admin, making is easier to follow things from your RSS reeder.
