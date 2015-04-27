@@ -10,7 +10,7 @@ class SimpleHistory {
 	const NAME = "Simple History";
 
 	// Dont use this any more! Will be removed in future versions. Use global SIMPLE_HISTORY_VERSION instead.
-	const VERSION = "2.0.28";
+	const VERSION = "2.0.29";
 
 	/**
 	 * For singleton
@@ -916,8 +916,8 @@ class SimpleHistory {
 			wp_enqueue_style("simple_history_styles", $plugin_url . "css/styles.css", false, SIMPLE_HISTORY_VERSION);
 			wp_enqueue_script("simple_history_script", $plugin_url . "js/scripts.js", array("jquery", "backbone", "wp-util"), SIMPLE_HISTORY_VERSION, true);
 
-			wp_enqueue_script("select2", $plugin_url . "/js/select2/select2.min.js", array("jquery"));
-			wp_enqueue_style("select2", $plugin_url . "/js/select2/select2.css");
+			wp_enqueue_script("select2", $plugin_url . "js/select2/select2.min.js", array("jquery"));
+			wp_enqueue_style("select2", $plugin_url . "js/select2/select2.css");
 
 			// Translations that we use in JavaScript
 			wp_localize_script('simple_history_script', 'simple_history_script_vars', array(
@@ -1224,20 +1224,20 @@ $active_tab = isset($_GET["selected-tab"]) ? $_GET["selected-tab"] : "settings";
 
 			<h3 class="nav-tab-wrapper">
 				<?php
-foreach ($arr_settings_tabs as $one_tab) {
+				foreach ($arr_settings_tabs as $one_tab) {
 
-			$tab_slug = $one_tab["slug"];
+					$tab_slug = $one_tab["slug"];
 
-			printf(
-				'<a href="%3$s" class="nav-tab %4$s">%1$s</a>',
-				$one_tab["name"], // 1
-				$tab_slug, // 2
-				add_query_arg("selected-tab", $tab_slug, $settings_base_url), // 3
-				$active_tab == $tab_slug ? "nav-tab-active" : ""// 4
-			);
+					printf(
+						'<a href="%3$s" class="nav-tab %4$s">%1$s</a>',
+						$one_tab["name"], // 1
+						$tab_slug, // 2
+						esc_url( add_query_arg("selected-tab", $tab_slug, $settings_base_url) ), // 3
+						$active_tab == $tab_slug ? "nav-tab-active" : ""// 4
+					);
 
-		}
-		?>
+				}
+				?>
 			</h3>
 
 			<?php
@@ -1354,7 +1354,7 @@ foreach ($arr_settings_tabs as $one_tab) {
 			add_settings_error("simple_history_rss_feed_regenerate_secret", "simple_history_rss_feed_regenerate_secret", $msg, "updated");
 			set_transient('settings_errors', get_settings_errors(), 30);
 
-			$goback = add_query_arg('settings-updated', 'true', wp_get_referer());
+			$goback = esc_url_raw( add_query_arg('settings-updated', 'true', wp_get_referer()) );
 			wp_redirect($goback);
 			exit;
 
@@ -1556,7 +1556,7 @@ foreach ($arr_settings_tabs as $one_tab) {
 	 */
 	function settings_field_clear_log() {
 
-		$clear_link = add_query_arg("", "");
+		$clear_link = esc_url( add_query_arg("", "") );
 		$clear_link = wp_nonce_url($clear_link, "simple_history_clear_log", "simple_history_clear_log_nonce");
 		$clear_days = $this->get_clear_history_interval();
 
@@ -1910,7 +1910,16 @@ foreach ($arr_settings_tabs as $one_tab) {
 		$data_attrs .= sprintf(' data-row-id="%1$d" ', $oneLogRow->id);
 		$data_attrs .= sprintf(' data-occasions-count="%1$d" ', $occasions_count);
 		$data_attrs .= sprintf(' data-occasions-id="%1$s" ', esc_attr( $oneLogRow->occasionsID ));
-		$data_attrs .= sprintf(' data-ip-address="%1$s" ', esc_attr( $oneLogRow->context["_server_remote_addr"] ) );
+
+		if ( isset($oneLogRow->context["_server_remote_addr"]) ) {
+			$data_attrs .= sprintf(' data-ip-address="%1$s" ', esc_attr( $oneLogRow->context["_server_remote_addr"] ) );
+		}
+
+		$arr_found_additional_ip_headers = $this->instantiatedLoggers["SimpleLogger"]["instance"]->get_event_ip_number_headers($oneLogRow);
+		if ( $arr_found_additional_ip_headers ) {
+			$data_attrs .= sprintf(' data-ip-address-multiple="1" ' );
+		}
+
 		$data_attrs .= sprintf(' data-logger="%1$s" ', esc_attr( $oneLogRow->logger ) );
 		$data_attrs .= sprintf(' data-level="%1$s" ', esc_attr( $oneLogRow->level ) );
 		$data_attrs .= sprintf(' data-date="%1$s" ', esc_attr( $oneLogRow->date ) );
@@ -1924,6 +1933,8 @@ foreach ($arr_settings_tabs as $one_tab) {
 		$more_details_html = "";
 		if ( $args["type"] == "single" ) {
 
+			$more_details_html = apply_filters("simple_history/log_html_output_details_single/html_before_context_table", $more_details_html, $oneLogRow);
+
 			$more_details_html .= sprintf('<h2 class="SimpleHistoryLogitem__moreDetailsHeadline">%1$s</h2>', __("Context data", "simple-history"));
 			$more_details_html .= "<p>" . __("This is potentially useful meta data that a logger has saved.", "simple-history") . "</p>";
 			$more_details_html .= "<table class='SimpleHistoryLogitem__moreDetailsContext'>";
@@ -1936,7 +1947,35 @@ foreach ($arr_settings_tabs as $one_tab) {
 				"Value"
 			);
 
-			foreach ($oneLogRow as $rowKey => $rowVal) {
+			$logRowKeysToShow = array_fill_keys( array_keys( (array) $oneLogRow), true);
+
+			/**
+			 * Filter what keys to show from oneLogRow
+			 *
+			 * Array is in format
+			 *
+ 			 *   Array
+ 			 *   (
+ 			 *       [id] => 1
+ 			 *       [logger] => 1
+ 			 *       [level] => 1
+ 			 *       ...
+ 			 *   )
+ 			 *
+			 *
+			 * @since 2.0.29
+			 *
+			 * @param array with keys to show. key to show = key. value = boolean to show or not.
+			 * @param object log row to show details from
+			 */
+			$logRowKeysToShow = apply_filters("simple_history/log_html_output_details_table/row_keys_to_show", $logRowKeysToShow, $oneLogRow);
+
+			foreach ( $oneLogRow as $rowKey => $rowVal ) {
+
+				// Only columns from oneLogRow that exist in logRowKeysToShow will be outputed
+				if ( ! array_key_exists($rowKey, $logRowKeysToShow) || ! $logRowKeysToShow[$rowKey] ) {
+					continue;
+				}				
 
 				// skip arrays and objects and such
 				if (is_array($rowVal) || is_object($rowVal)) {
@@ -1954,7 +1993,39 @@ foreach ($arr_settings_tabs as $one_tab) {
 
 			}
 
-			foreach ($oneLogRow->context as $contextKey => $contextVal) {
+
+			$logRowContextKeysToShow = array_fill_keys( array_keys( (array) $oneLogRow->context), true);
+
+			/**
+			 * Filter what keys to show from the row context
+			 *
+			 * Array is in format
+			 *
+ 			 *   Array
+ 			 *   (
+			 *       [plugin_slug] => 1
+			 *       [plugin_name] => 1
+			 *       [plugin_title] => 1
+			 *       [plugin_description] => 1
+			 *       [plugin_author] => 1
+			 *       [plugin_version] => 1
+ 			 *       ...
+ 			 *   )
+ 			 *
+			 *
+			 * @since 2.0.29
+			 *
+			 * @param array with keys to show. key to show = key. value = boolean to show or not.
+			 * @param object log row to show details from
+			 */
+			$logRowContextKeysToShow = apply_filters("simple_history/log_html_output_details_table/context_keys_to_show", $logRowContextKeysToShow, $oneLogRow);
+
+			foreach ( $oneLogRow->context as $contextKey => $contextVal ) {
+
+				// Only columns from context that exist in logRowContextKeysToShow will be outputed
+				if ( ! array_key_exists($contextKey, $logRowContextKeysToShow) || ! $logRowContextKeysToShow[$contextKey] ) {
+					continue;
+				}				
 
 				$more_details_html .= sprintf(
 					'<tr>
@@ -1968,6 +2039,8 @@ foreach ($arr_settings_tabs as $one_tab) {
 			}
 
 			$more_details_html .= "</table>";
+
+			$more_details_html = apply_filters("simple_history/log_html_output_details_single/html_after_context_table", $more_details_html, $oneLogRow);
 
 			$more_details_html = sprintf(
 				'<div class="SimpleHistoryLogitem__moreDetails">%1$s</div>',
@@ -1984,7 +2057,11 @@ foreach ($arr_settings_tabs as $one_tab) {
 		);
 
 		if (isset($oneLogRow->initiator) && !empty($oneLogRow->initiator)) {
-			$classes[] = "SimpleHistoryLogitem--initiator-" . esc_attr($oneLogRow->initiator);
+			$classes[] = "SimpleHistoryLogitem--initiator-" . $oneLogRow->initiator;
+		}
+
+		if ( $arr_found_additional_ip_headers ) {
+			$classes[] = "SimpleHistoryLogitem--IPAddress-multiple";
 		}
 
 		// Always append the log level tag
@@ -2030,7 +2107,7 @@ foreach ($arr_settings_tabs as $one_tab) {
 			$oneLogRow->logger, // 7
 			$data_attrs, // 8 data attributes
 			$more_details_html, // 9
-			join(" ", $classes) // 10
+			esc_attr( join(" ", $classes) ) // 10
 		);
 
 		// Get the main message row.
@@ -2602,3 +2679,93 @@ function simple_history_add($args) {
 	SimpleLogger()->info($message, $context);
 
 } // simple_history_add
+
+/**
+ * Pretty much same as wp_text_diff() but with this you can set leading and trailing context lines
+ *
+ * @since 2.0.29
+ *
+ * 
+ * Original description from wp_text_diff():
+ *
+ * Displays a human readable HTML representation of the difference between two strings.
+ *
+ * The Diff is available for getting the changes between versions. The output is
+ * HTML, so the primary use is for displaying the changes. If the two strings
+ * are equivalent, then an empty string will be returned.
+ *
+ * The arguments supported and can be changed are listed below.
+ *
+ * 'title' : Default is an empty string. Titles the diff in a manner compatible
+ *		with the output.
+ * 'title_left' : Default is an empty string. Change the HTML to the left of the
+ *		title.
+ * 'title_right' : Default is an empty string. Change the HTML to the right of
+ *		the title. 
+ *
+ * @see wp_parse_args() Used to change defaults to user defined settings.
+ * @uses Text_Diff
+ * @uses WP_Text_Diff_Renderer_Table
+ *
+ * @param string $left_string "old" (left) version of string
+ * @param string $right_string "new" (right) version of string
+ * @param string|array $args Optional. Change 'title', 'title_left', and 'title_right' defaults. And leading_context_lines and trailing_context_lines.
+ * @return string Empty string if strings are equivalent or HTML with differences.
+ */
+function simple_history_text_diff( $left_string, $right_string, $args = null ) {
+	
+	$defaults = array( 
+		'title' => '', 
+		'title_left' => '', 
+		'title_right' => '',
+		"leading_context_lines" => 1,
+		"trailing_context_lines" => 1
+	);
+
+	$args = wp_parse_args( $args, $defaults );
+
+	if ( !class_exists( 'WP_Text_Diff_Renderer_Table' ) )
+		require( ABSPATH . WPINC . '/wp-diff.php' );
+
+	$left_string  = normalize_whitespace($left_string);
+	$right_string = normalize_whitespace($right_string);
+
+	$left_lines  = explode("\n", $left_string);
+	$right_lines = explode("\n", $right_string);
+	$text_diff = new Text_Diff($left_lines, $right_lines);
+
+	$renderer  = new WP_Text_Diff_Renderer_Table( $args );
+	$renderer->_leading_context_lines = $args["leading_context_lines"];
+	$renderer->_trailing_context_lines = $args["trailing_context_lines"];
+
+	$diff = $renderer->render($text_diff);
+
+	if ( !$diff )
+		return '';
+
+	$r  = "<table class='diff SimpleHistory__diff'>\n";
+
+	if ( ! empty( $args[ 'show_split_view' ] ) ) {
+		$r .= "<col class='content diffsplit left' /><col class='content diffsplit middle' /><col class='content diffsplit right' />";
+	} else {
+		$r .= "<col class='content' />";
+	}
+
+	if ( $args['title'] || $args['title_left'] || $args['title_right'] )
+		$r .= "<thead>";
+	if ( $args['title'] )
+		$r .= "<tr class='diff-title'><th colspan='4'>$args[title]</th></tr>\n";
+	if ( $args['title_left'] || $args['title_right'] ) {
+		$r .= "<tr class='diff-sub-title'>\n";
+		$r .= "\t<td></td><th>$args[title_left]</th>\n";
+		$r .= "\t<td></td><th>$args[title_right]</th>\n";
+		$r .= "</tr>\n";
+	}
+	if ( $args['title'] || $args['title_left'] || $args['title_right'] )
+		$r .= "</thead>\n";
+
+	$r .= "<tbody>\n$diff\n</tbody>\n";
+	$r .= "</table>";
+
+	return $r;
+}

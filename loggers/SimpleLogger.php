@@ -222,19 +222,58 @@ class SimpleLogger {
 
 			case "web_user":
 
-				if (empty($context["_server_remote_addr"])) {
+				/*
+				Note: server_remote_addr may not show visiting/attacking ip, if server is behind...stuff..
+				Can be behind varnish cashe, or browser can for example use compression in chrome mobile
+				then the real ip is behind _server_http_x_forwarded_for_0 or similar
+				_server_remote_addr	66.249.81.222
+				_server_http_x_forwarded_for_0	5.35.187.212
+				*/
+
+				// Check if additional IP addresses are stored, from http_x_forwarded_for and so on
+				$arr_found_additional_ip_headers = $this->get_event_ip_number_headers($row);
+
+				if ( empty( $context["_server_remote_addr"] ) ) {
 
 					$initiator_html .= "<strong class='SimpleHistoryLogitem__inlineDivided'>" . __("Anonymous web user", "simple-history") . "</strong> ";
 
 				} else {
 
-					$iplookup_link = sprintf('https://ipinfo.io/%1$s', esc_attr($context["_server_remote_addr"]));
-
 					$initiator_html .= "<strong class='SimpleHistoryLogitem__inlineDivided SimpleHistoryLogitem__anonUserWithIp'>";
-					$initiator_html .= sprintf(
-						__('Anonymous user from %1$s', "simple-history"),
-						"<a target='_blank' href={$iplookup_link} class='SimpleHistoryLogitem__anonUserWithIp__theIp'>" . esc_attr($context["_server_remote_addr"]) . "</a>"
-					);
+
+					#if ( sizeof( $arr_found_additional_ip_headers ) ) {
+
+
+						#$iplookup_link = sprintf('https://ipinfo.io/%1$s', esc_attr($context["_server_remote_addr"]));
+
+						#$ip_numbers_joined = wp_sprintf_l('%l', array("_server_remote_addr" => $context["_server_remote_addr"]) + $arr_found_additional_ip_headers);
+
+						/*$initiator_html .= sprintf(
+							__('Anonymous user with multiple IP addresses detected: %1$s', "simple-history"),
+							"<a target='_blank' href={$iplookup_link} class='SimpleHistoryLogitem__anonUserWithIp__theIp'>" . esc_html( $ip_numbers_joined ) . "</a>"
+						);*/
+
+						/*
+						print_r($arr_found_additional_ip_headers);
+						Array
+						(
+						    [_server_http_x_forwarded_for_0] => 5.35.187.212
+						    [_server_http_x_forwarded_for_1] => 83.251.97.21
+						)
+						*/
+
+					#} else {
+
+						// single ip address
+						$iplookup_link = sprintf('https://ipinfo.io/%1$s', esc_attr($context["_server_remote_addr"]));
+								
+						$initiator_html .= sprintf(
+							__('Anonymous user from %1$s', "simple-history"),
+							"<a target='_blank' href={$iplookup_link} class='SimpleHistoryLogitem__anonUserWithIp__theIp'>" . esc_html($context["_server_remote_addr"]) . "</a>"
+						);
+
+					#} // multiple ip
+			
 					$initiator_html .= "</strong> ";
 
 					// $initiator_html .= "<strong>" . __("<br><br>Unknown user from {$context["_server_remote_addr"]}") . "</strong>";
@@ -878,7 +917,7 @@ class SimpleLogger {
 
 			// No occasions id specified, create one bases on the data array
 			$occasions_data = $data + $context;
-
+			// error_log(simpleHistory::json_encode($occasions_data));
 			// Don't include date in context data
 			unset($occasions_data["date"]);
 
@@ -1024,7 +1063,7 @@ class SimpleLogger {
 
 				// If web server is behind a load balancer then the ip address will always be the same
 				// See bug report: https://wordpress.org/support/topic/use-x-forwarded-for-http-header-when-logging-remote_addr?replies=1#post-6422981
-				// Note that the x-forwarded-for header can contain multiple ips
+				// Note that the x-forwarded-for header can contain multiple ips, comma separated
 				// Also note that the header can be faked
 				// Ref: http://stackoverflow.com/questions/753645/how-do-i-get-the-correct-ip-from-http-x-forwarded-for-if-it-contains-multiple-ip
 				// Ref: http://blackbe.lt/advanced-method-to-obtain-the-client-ip-in-php/
@@ -1032,7 +1071,7 @@ class SimpleLogger {
 				// Check for IP in lots of headers
 				// Based on code found here:
 				// http://blackbe.lt/advanced-method-to-obtain-the-client-ip-in-php/
-				$ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED');
+				$ip_keys = $this->get_ip_number_header_keys();
 
 				foreach ($ip_keys as $key) {
 
@@ -1070,6 +1109,17 @@ class SimpleLogger {
 				$context["_server_http_referer"] = $_SERVER["HTTP_REFERER"];
 			}
 
+
+			/**
+			 * Filter the context to store for this event/row
+			 *
+			 * @since 2.0.29
+			 *
+			 * @param array $context Array with all context data to store. Modify and return this.
+			 * @param array $data Array with data used for parent row.
+			 */
+			$context = apply_filters("simple_history/log_insert_context", $context, $data);
+			
 			// Insert all context values into db
 			foreach ($context as $key => $value) {
 
@@ -1093,6 +1143,58 @@ class SimpleLogger {
 		return $this;
 
 	} // log
+
+	/**
+	 * Returns array with headers that may contain user IP
+	 *
+	 * @since 2.0.29
+	 */
+	public function get_ip_number_header_keys() {
+
+		$arr = array(
+			'HTTP_CLIENT_IP', 
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_FORWARDED',
+			'HTTP_X_CLUSTER_CLIENT_IP',
+			'HTTP_FORWARDED_FOR',
+			'HTTP_FORWARDED'
+		);
+
+		return $arr;
+
+	}
+
+	/**
+	 * Returns additional headers with ip number from context
+	 *
+	 * @since 2.0.29
+	 */
+	function get_event_ip_number_headers($row) {
+
+		$ip_keys = $this->get_ip_number_header_keys();
+		$arr_found_additional_ip_headers = array();
+		$context = $row->context;
+
+		foreach ( $ip_keys as $one_ip_header_key ) {
+			
+			$one_ip_header_key_lower = strtolower($one_ip_header_key);
+
+			foreach ( $context as $context_key => $context_val ) {
+
+				#$key_check_for = "_server_" . strtolower($one_ip_header_key) . "_0";
+
+				$match = preg_match("/^_server_{$one_ip_header_key_lower}_[\d+]/", $context_key, $matches);
+				if ( $match ) {
+					$arr_found_additional_ip_headers[ $context_key ] = $context_val;
+				}
+
+			} // foreach context key for this ip header key
+
+		} // foreach ip header key
+		
+		return $arr_found_additional_ip_headers;
+
+	}
 
 	/**
 	 * Ensures an ip address is both a valid IP and does not fall within
