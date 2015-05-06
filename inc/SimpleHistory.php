@@ -10,7 +10,7 @@ class SimpleHistory {
 	const NAME = "Simple History";
 
 	// Dont use this any more! Will be removed in future versions. Use global SIMPLE_HISTORY_VERSION instead.
-	const VERSION = "2.0.29";
+	const VERSION = "2.0.30";
 
 	/**
 	 * For singleton
@@ -274,7 +274,6 @@ class SimpleHistory {
 		if ($this->is_on_our_own_pages()) {
 
 			?>
-
 			<script type="text/html" id="tmpl-simple-history-base">
 
 				<div class="SimpleHistory__waitingForFirstLoad">
@@ -348,6 +347,30 @@ class SimpleHistory {
 					</div>
 				</div>
 
+			</script>
+
+			<script type="text/html" id="tmpl-simple-history-occasions-too-many">
+				<li 
+					class="SimpleHistoryLogitem 
+						   SimpleHistoryLogitem--occasion
+						   SimpleHistoryLogitem--occasion-tooMany
+						   ">
+					<div class="SimpleHistoryLogitem__firstcol"></div>
+					<div class="SimpleHistoryLogitem__secondcol">
+						<div class="SimpleHistoryLogitem__text">
+							<?php _e('Sorry, but there are too many similar events to show.', "simple-history"); ?>
+							<!-- <br>occasionsCount: {{ data.occasionsCount }}
+							<br>occasionsCountMaxReturn: {{ data.occasionsCountMaxReturn }} 
+							<br>diff: {{ data.occasionsCount - data.occasionsCountMaxReturn }} 
+							Suggestions: 
+							<ul>
+								<li>- dig into database directly
+								<li>- Export
+							</ul>
+							-->
+						</div>
+					</div>
+				</li>
 			</script>
 
 			<?php
@@ -1218,9 +1241,9 @@ class SimpleHistory {
 			</h2>
 
 			<?php
-$active_tab = isset($_GET["selected-tab"]) ? $_GET["selected-tab"] : "settings";
-		$settings_base_url = menu_page_url(SimpleHistory::SETTINGS_MENU_SLUG, 0);
-		?>
+			$active_tab = isset($_GET["selected-tab"]) ? $_GET["selected-tab"] : "settings";
+			$settings_base_url = menu_page_url(SimpleHistory::SETTINGS_MENU_SLUG, 0);
+			?>
 
 			<h3 class="nav-tab-wrapper">
 				<?php
@@ -1610,10 +1633,12 @@ $active_tab = isset($_GET["selected-tab"]) ? $_GET["selected-tab"] : "settings";
 		$sql_num_rows = "SELECT count(id) AS num_rows FROM {$tableprefix}{$simple_history_table}";
 		$num_rows = $wpdb->get_var($sql_num_rows, 0);
 
-		$sql = "DELETE FROM {$tableprefix}{$simple_history_table}";
+		#$sql = "DELETE FROM {$tableprefix}{$simple_history_table}";
+		$sql = "TRUNCATE {$tableprefix}{$simple_history_table}";
 		$wpdb->query($sql);
 
-		$sql = "DELETE FROM {$tableprefix}{$simple_history_context_table}";
+		#$sql = "DELETE FROM {$tableprefix}{$simple_history_context_table}";
+		$sql = "TRUNCATE {$tableprefix}{$simple_history_context_table}";
 		$wpdb->query($sql);
 
 		// Zero state sucks
@@ -1970,6 +1995,17 @@ $active_tab = isset($_GET["selected-tab"]) ? $_GET["selected-tab"] : "settings";
 			 */
 			$logRowKeysToShow = apply_filters("simple_history/log_html_output_details_table/row_keys_to_show", $logRowKeysToShow, $oneLogRow);
 
+			// Hide some keys by default
+			unset(
+				$logRowKeysToShow["occasionsID"],
+				$logRowKeysToShow["subsequentOccasions"],
+				$logRowKeysToShow["rep"],
+				$logRowKeysToShow["repeated"],
+				$logRowKeysToShow["occasionsIDType"],
+				$logRowKeysToShow["context"]
+			);
+
+
 			foreach ( $oneLogRow as $rowKey => $rowVal ) {
 
 				// Only columns from oneLogRow that exist in logRowKeysToShow will be outputed
@@ -1995,7 +2031,25 @@ $active_tab = isset($_GET["selected-tab"]) ? $_GET["selected-tab"] : "settings";
 
 
 			$logRowContextKeysToShow = array_fill_keys( array_keys( (array) $oneLogRow->context), true);
-
+			/*
+			error_log($this->json_encode($logRowContextKeysToShow));
+			 Marker - 2 maj 2015 20:51:54
+			[02-May-2015 18:51:57 UTC] {
+			    "post_id": true,
+			    "post_type": true,
+			    "post_title": true,
+			    "post_prev_post_title": true,
+			    "post_new_post_title": true,
+			    "post_prev_post_name": true,
+			    "post_new_post_name": true,
+			    "_message_key": true,
+			    "_user_id": true,
+			    "_user_login": true,
+			    "_user_email": true,
+			    "_server_remote_addr": true,
+			    "_server_http_referer": true
+			}
+			*/
 			/**
 			 * Filter what keys to show from the row context
 			 *

@@ -3,8 +3,8 @@ Contributors: eskapism
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
-Tested up to: 4.2
-Stable tag: 2.0.29
+Tested up to: 4.2.1
+Stable tag: 2.0.30
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -111,9 +111,19 @@ initiated by a specific user.
 
 4. Click on the IP address of an entry to view the location of for example a failed login attempt.
 
+
 == Changelog ==
 
 ## Changelog
+
+= 2.0.30 (May 2015) =
+
+- Added: Username of logged events now link to that user's profile.
+- Fixed: When expanding ocassions the first loaded occasion was the same event as the one you expanded from, and the last ocassion was missing. Looked extra stupid when only 1 occasion existed, and you clicked "show ocassions" only to just find the same event again. So stupid. But fixed now!
+- Fixed: If an event had many similar events the list of similar events could freeze the browser. ([17948 failed login attempts overnight](https://twitter.com/eskapism/status/595478847598002176) is not that uncommon it turns out!
+- Fixed: Some loggers were missing the "All"-message in the search.
+- Changed: Hide some more keys and values by default in the context data popup.
+- Changed: Use `truncate` instead of `delete` when clearing the database. Works much faster on large logs.
 
 = 2.0.29 (April 2015) =
 
