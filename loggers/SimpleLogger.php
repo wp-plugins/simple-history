@@ -102,7 +102,13 @@ class SimpleLogger {
 
 		$arr_info = $this->getInfo();
 
-		return $arr_info["capability"];
+		$capability = "manage_options";
+
+		if ( ! empty( $arr_info["capability"] ) ) {
+			$capability = $arr_info["capability"];
+		}
+
+		return $capability;
 
 	}
 
@@ -168,15 +174,23 @@ class SimpleLogger {
 
 					$user_display_name = $user->display_name;
 
-					// If user who logged this is the currently logged in user
-					// skip name and email and use just "You"
-					if ( $is_current_user ) {
+					/*
+					 * If user who logged this is the currently logged in user
+					 * skip name and email and use just "You"
+					 *
+					 * @param bool If you should be used
+					 * @since 2.1
+					 */
+					$use_you = apply_filters("simple_history/header_initiator_use_you", true);
+					
+					if ( $use_you && $is_current_user ) {
 
 						$tmpl_initiator_html = '
 							<a href="%6$s" class="SimpleHistoryLogitem__headerUserProfileLink">
 								<strong class="SimpleHistoryLogitem__inlineDivided">%5$s</strong>
 							</a>
-						'	;
+						';
+
 					} else {
 
 						$tmpl_initiator_html = '
@@ -274,14 +288,14 @@ class SimpleLogger {
 
 						// single ip address
 						$iplookup_link = sprintf('https://ipinfo.io/%1$s', esc_attr($context["_server_remote_addr"]));
-								
+
 						$initiator_html .= sprintf(
 							__('Anonymous user from %1$s', "simple-history"),
 							"<a target='_blank' href={$iplookup_link} class='SimpleHistoryLogitem__anonUserWithIp__theIp'>" . esc_html($context["_server_remote_addr"]) . "</a>"
 						);
 
 					#} // multiple ip
-			
+
 					$initiator_html .= "</strong> ";
 
 					// $initiator_html .= "<strong>" . __("<br><br>Unknown user from {$context["_server_remote_addr"]}") . "</strong>";
@@ -294,7 +308,7 @@ class SimpleLogger {
 				break;
 
 			case "other":
-				$initiator_html .= "<strong class='SimpleHistoryLogitem__inlineDivided'>Other</strong>";
+				$initiator_html .= "<strong class='SimpleHistoryLogitem__inlineDivided'>" . _x("Other", "Event header output, when initiator is unknown", "simple-history") . "</strong>";
 				break;
 
 			// no initiator
@@ -594,8 +608,8 @@ class SimpleLogger {
 	 *   return $this->logByMessageKey(SimpleLoggerLogLevels::EMERGENCY, $message, $context);
 	 */
 	private function logByMessageKey($SimpleLoggerLogLevelsLevel, $messageKey, $context) {
-	
-		// When logging by message then the key must exist	
+
+		// When logging by message then the key must exist
 		if ( ! isset( $this->messages[ $messageKey ]["untranslated_text"] ) ) {
 			return;
 		}
@@ -613,7 +627,7 @@ class SimpleLogger {
 		 * @return bool false to abort logging
 		 */
 		$doLog = apply_filters("simple_history/simple_logger/log_message_key", true, $this->slug, $messageKey, $SimpleLoggerLogLevelsLevel, $context);
-		
+
 		if ( ! $doLog ) {
 			return;
 		}
@@ -839,16 +853,16 @@ class SimpleLogger {
 
 		// Check if $message is a translated message, and if so then fetch original
 		$sh_latest_translations = $this->simpleHistory->gettextLatestTranslations;
-		
+
 		if ( ! empty( $sh_latest_translations ) ) {
 
 			if ( isset( $sh_latest_translations[ $message ] ) ) {
-				
+
 				// Translation of this phrase was found, so use original phrase instead of translated one
 
 				// Store textdomain since it's required to translate
 				$context["_gettext_domain"] = $sh_latest_translations[$message]["domain"];
-				
+
 				// These are good to keep when debugging
 				// $context["_gettext_org_message"] = $sh_latest_translations[$message]["text"];
 				// $context["_gettext_translated_message"] = $sh_latest_translations[$message]["translation"];
@@ -988,12 +1002,12 @@ class SimpleLogger {
 
 			// If running as CLI and WP_CLI_PHP_USED is set then it is WP CLI that is doing it
 			// How to log this? Is this a user, is it WordPress, or what?
-			// I'm thinking: 
+			// I'm thinking:
 			//  - it is a user that is manually doing this, on purpose, with intent, so not auto wordpress
 			//  - it is a specific user, but we don't know who
 			// - sounds like a special case, set initiator to wp_cli
 			if ( isset( $_SERVER["WP_CLI_PHP_USED"] ) && "cli" == php_sapi_name() ) {
-				
+
 				$data["initiator"] = SimpleLoggerLogInitiators::WP_CLI;
 
 			}
@@ -1128,7 +1142,7 @@ class SimpleLogger {
 			 * @param array $data Array with data used for parent row.
 			 */
 			$context = apply_filters("simple_history/log_insert_context", $context, $data);
-			
+
 			// Insert all context values into db
 			foreach ($context as $key => $value) {
 
@@ -1161,7 +1175,7 @@ class SimpleLogger {
 	public function get_ip_number_header_keys() {
 
 		$arr = array(
-			'HTTP_CLIENT_IP', 
+			'HTTP_CLIENT_IP',
 			'HTTP_X_FORWARDED_FOR',
 			'HTTP_X_FORWARDED',
 			'HTTP_X_CLUSTER_CLIENT_IP',
@@ -1185,7 +1199,7 @@ class SimpleLogger {
 		$context = $row->context;
 
 		foreach ( $ip_keys as $one_ip_header_key ) {
-			
+
 			$one_ip_header_key_lower = strtolower($one_ip_header_key);
 
 			foreach ( $context as $context_key => $context_val ) {
@@ -1200,7 +1214,7 @@ class SimpleLogger {
 			} // foreach context key for this ip header key
 
 		} // foreach ip header key
-		
+
 		return $arr_found_additional_ip_headers;
 
 	}

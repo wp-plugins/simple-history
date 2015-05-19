@@ -3,8 +3,8 @@ Contributors: eskapism
 Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
-Tested up to: 4.2.1
-Stable tag: 2.0.30
+Tested up to: 4.2.2
+Stable tag: 2.1
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -116,11 +116,22 @@ initiated by a specific user.
 
 ## Changelog
 
+= 2.1 (May 2015) =
+
+- Added: Export! Now it's possible to export the events log to a JSON or CSV formatted file. It's your data so you should be able to export it any time you want or need. And now you can do that. You will find the export function in the Simple History settings page (Settings -> Simple History).
+- Added: Filter `simple_history/add_custom_logger` and function `register_logger` that together are used to load external custom loggers. See [example-logger.php](https://github.com/bonny/WordPress-Simple-History/blob/master/examples/example-logger.php) for usage example.
+- Added: Filter `simple_history/header_initiator_use_you`.
+- Fixed: Fixed an undefined variable in get_avatar(). Fixes https://github.com/bonny/WordPress-Simple-History/issues/74.
+- Fixed: When using [HyperDB](https://wordpress.org/support/plugin/hyperdb) only one event was returned. Fixed by using [adding `NO_SELECT_FOUND_ROWS` to the query](https://plugins.trac.wordpress.org/browser/hyperdb/trunk/db.php?#L49). Should fix problems for users using HyperDB and also users using for example [wpengine.com](http://wpengine.com) (that probably also is using HyperDB or a similar approach).
+- Changed: Loggers now get default capability "manage_options" if they have no capability set.
+- Changed: Misc internal cleanup.
+- Removed: filter `simple_history/loggers_dir` removed, because loggers are loaded from array instead of file listing generated from `glob()`. Should be (however to the eye non-noticable) faster.
+
 = 2.0.30 (May 2015) =
 
 - Added: Username of logged events now link to that user's profile.
 - Fixed: When expanding ocassions the first loaded occasion was the same event as the one you expanded from, and the last ocassion was missing. Looked extra stupid when only 1 occasion existed, and you clicked "show ocassions" only to just find the same event again. So stupid. But fixed now!
-- Fixed: If an event had many similar events the list of similar events could freeze the browser. ([17948 failed login attempts overnight](https://twitter.com/eskapism/status/595478847598002176) is not that uncommon it turns out!
+- Fixed: If an event had many similar events the list of similar events could freeze the browser. ([17948 failed login attempts overnight](https://twitter.com/eskapism/status/595478847598002176) is not that uncommon it turns out!)
 - Fixed: Some loggers were missing the "All"-message in the search.
 - Changed: Hide some more keys and values by default in the context data popup.
 - Changed: Use `truncate` instead of `delete` when clearing the database. Works much faster on large logs.
