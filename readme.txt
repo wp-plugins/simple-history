@@ -4,7 +4,7 @@ Donate link: http://eskapism.se/sida/donate/
 Tags: history, log, changes, changelog, audit, trail, pages, attachments, users, cms, dashboard, admin, syslog, feed, activity, stream
 Requires at least: 3.6.0
 Tested up to: 4.2.2
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -57,7 +57,7 @@ See the plugin in action with this short screencast:
 
 #### API so you can add your own events to Simple History
 
-If you are a theme or plugin developer and would like to add your own things/events to Simple History you can do that by calling the function `simple_history_add()` like this:
+If you are a theme or plugin developer and would like to add your own things/events to Simple History you can do that by using the function `SimpleLogger()` like this:
 
 `
 <?php
@@ -116,6 +116,11 @@ initiated by a specific user.
 == Changelog ==
 
 ## Changelog
+
+= 2.1.3 (July 2015) =
+
+- Fixed: Ajax error when loading a log that contained uploaded images.
+- Fixed: Removed some debug log messages.
 
 = 2.1.2 (July 2015) =
 
